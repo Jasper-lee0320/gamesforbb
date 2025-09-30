@@ -17,8 +17,12 @@
             background-size: 400% 400%;
             animation: gradientShift 8s ease infinite;
             color: white;
+            margin: 0;
+            padding: 0;
             overflow: hidden;
             user-select: none;
+            height: 100vh;
+            width: 100vw;
         }
         
         @keyframes gradientShift {
@@ -34,7 +38,7 @@
         }
         
         .game-ui {
-            position: absolute;
+            position: fixed;
             top: 20px;
             left: 20px;
             z-index: 100;
@@ -75,22 +79,23 @@
         
         .game-world {
             position: relative;
-            width: 100%;
-            height: 100%;
+            width: 100vw;
+            height: 100vh;
             overflow: hidden;
         }
         
         .background {
-            position: absolute;
+            position: fixed;
             top: 0;
             left: 0;
-            width: 200%;
-            height: 100%;
+            width: 200vw;
+            height: 100vh;
             background: linear-gradient(to bottom, 
                 rgba(255, 182, 193, 0.3) 0%, 
                 rgba(255, 105, 180, 0.2) 50%, 
                 rgba(255, 20, 147, 0.1) 100%);
             animation: scrollBackground 20s linear infinite;
+            z-index: 1;
         }
         
         @keyframes scrollBackground {
@@ -99,14 +104,15 @@
         }
         
         .ground {
-            position: absolute;
+            position: fixed;
             bottom: 0;
             left: 0;
-            width: 200%;
+            width: 200vw;
             height: 100px;
             background: linear-gradient(45deg, #ff69b4, #ff1493);
             border-top: 5px solid #fff;
             animation: scrollGround 8s linear infinite;
+            z-index: 10;
         }
         
         @keyframes scrollGround {
@@ -117,7 +123,7 @@
         .player {
             position: absolute;
             left: 100px;
-            bottom: 100px;
+            bottom: 150px;
             width: 50px;
             height: 50px;
             font-size: 40px;
@@ -238,7 +244,7 @@
         }
         
         .power-meter {
-            position: absolute;
+            position: fixed;
             right: 20px;
             top: 50%;
             transform: translateY(-50%);
@@ -293,7 +299,7 @@
         }
         
         .achievements {
-            position: absolute;
+            position: fixed;
             top: 20px;
             right: 20px;
             background: rgba(255, 255, 255, 0.9);
@@ -326,8 +332,17 @@
     </style>
 </head>
 <body>
+    <script>
+        console.log('🚀 页面开始加载 - beibei-parkour-adventure.html');
+        console.log('📱 窗口尺寸:', window.innerWidth, 'x', window.innerHeight);
+        console.log('📄 文档就绪状态:', document.readyState);
+    </script>
+    
     <div class="game-container">
+        <script>console.log('🎮 创建game-container');</script>
+        
         <div class="game-ui">
+            <script>console.log('🎯 创建game-ui');</script>
             <h2>🏃‍♀️ 蓓蓓跑酷</h2>
             <div class="stats">
                 <div>💖 生命: <span id="lives">3</span></div>
@@ -339,6 +354,7 @@
         </div>
         
         <div class="achievements">
+            <script>console.log('🏆 创建achievements面板');</script>
             <h3>🏆 成就</h3>
             <div class="achievement" id="firstRun">
                 <span>🌟</span>
@@ -363,10 +379,12 @@
         </div>
         
         <div class="power-meter">
+            <script>console.log('⚡ 创建power-meter');</script>
             <div class="power-fill" id="powerFill"></div>
         </div>
         
         <div class="controls">
+            <script>console.log('🎮 创建controls面板');</script>
             <div id="startControls">
                 <button class="restart-btn" onclick="startGame()" style="margin-bottom: 10px;">🎮 开始游戏</button>
             </div>
@@ -378,9 +396,11 @@
         </div>
         
         <div class="game-world">
+            <script>console.log('🌍 创建game-world');</script>
             <div class="background"></div>
             <div class="ground"></div>
             <div class="player" id="player">🏃‍♀️</div>
+            <script>console.log('👤 创建player元素');</script>
         </div>
         
         <div class="game-over" id="gameOver">
@@ -391,6 +411,49 @@
     </div>
 
     <script>
+        console.log('🎮 开始执行主JavaScript代码');
+        
+        // 检查关键元素是否存在
+        function checkElements() {
+            const elements = [
+                'player', 'lives', 'score', 'gems', 'distance', 'energy',
+                'powerFill', 'startControls', 'gameControls'
+            ];
+            
+            console.log('🔍 检查页面元素:');
+            console.log('🖥️ 视口尺寸:', window.innerWidth, 'x', window.innerHeight);
+            
+            elements.forEach(id => {
+                const element = document.getElementById(id);
+                console.log(`  ${id}:`, element ? '✅ 存在' : '❌ 不存在');
+                if (element) {
+                    const rect = element.getBoundingClientRect();
+                    console.log(`    位置: (${rect.left}, ${rect.top}) 尺寸: ${rect.width}x${rect.height}`);
+                    console.log(`    可见性: display=${getComputedStyle(element).display}, visibility=${getComputedStyle(element).visibility}`);
+                    
+                    // 特殊处理player元素
+                    if (id === 'player') {
+                        const computedStyle = getComputedStyle(element);
+                        console.log(`    Player详细信息:`);
+                        console.log(`      position: ${computedStyle.position}`);
+                        console.log(`      left: ${computedStyle.left}`);
+                        console.log(`      bottom: ${computedStyle.bottom}`);
+                        console.log(`      top: ${computedStyle.top}`);
+                        console.log(`      父容器高度: ${element.parentElement.offsetHeight}px`);
+                        
+                        // 尝试强制设置位置
+                        if (rect.top > window.innerHeight - 200) {
+                            console.log('🔧 Player位置异常，尝试修复...');
+                            element.style.position = 'fixed';
+                            element.style.left = '100px';
+                            element.style.bottom = '150px';
+                            element.style.top = 'auto';
+                        }
+                    }
+                }
+            });
+        }
+        
         // 游戏状态
         const gameState = {
             isPlaying: true,
@@ -484,12 +547,20 @@
         
         // 更新UI
         function updateUI() {
-            document.getElementById('lives').textContent = gameState.lives;
-            document.getElementById('score').textContent = gameState.score;
-            document.getElementById('gems').textContent = gameState.gems;
-            document.getElementById('distance').textContent = Math.floor(gameState.distance);
-            document.getElementById('energy').textContent = Math.floor(gameState.energy);
-            document.getElementById('powerFill').style.height = gameState.energy + '%';
+            console.log('🔄 更新UI，当前游戏状态:', gameState);
+            
+            try {
+                document.getElementById('lives').textContent = gameState.lives;
+                document.getElementById('score').textContent = gameState.score;
+                document.getElementById('gems').textContent = gameState.gems;
+                document.getElementById('distance').textContent = Math.floor(gameState.distance);
+                document.getElementById('energy').textContent = Math.floor(gameState.energy);
+                document.getElementById('powerFill').style.height = gameState.energy + '%';
+                
+                console.log('✅ UI更新成功');
+            } catch (error) {
+                console.error('❌ UI更新失败:', error);
+            }
         }
         
         // 玩家控制
@@ -894,10 +965,65 @@
         
         // 启动游戏
         document.addEventListener('DOMContentLoaded', () => {
-            console.log('🎮 蓓蓓的跑酷冒险加载完成!');
-            // 不自动开始游戏，等待用户点击开始按钮
-            updateUI();
+            console.log('📄 DOM内容加载完成!');
+            console.log('🎮 蓓蓓的跑酷冒险页面就绪');
+            
+            // 检查所有元素
+            checkElements();
+            
+            try {
+                // 不自动开始游戏，等待用户点击开始按钮
+                updateUI();
+                console.log('✅ 初始化完成，等待用户开始游戏');
+            } catch (error) {
+                console.error('❌ 初始化失败:', error);
+            }
         });
+        
+        // 页面加载完成后的额外检查
+        window.addEventListener('load', () => {
+            console.log('🎯 页面完全加载完成');
+            
+            // 紧急修复：强制设置所有元素位置
+            emergencyPositionFix();
+            
+            console.log('🔍 再次检查元素状态...');
+            setTimeout(() => {
+                checkElements();
+            }, 100);
+        });
+        
+        // 紧急位置修复
+        function emergencyPositionFix() {
+            console.log('🚨 执行紧急位置修复...');
+            
+            // 基本UI位置修复
+            const fixes = [
+                { id: 'player', css: 'position:fixed !important; left:100px !important; bottom:200px !important; z-index:100 !important;' },
+                { id: 'startControls', css: 'position:fixed !important; top:60% !important; left:50% !important; transform:translate(-50%,-50%) !important; z-index:1000 !important;' },
+                { id: 'gameControls', css: 'position:fixed !important; bottom:40px !important; left:50% !important; transform:translateX(-50%) !important; z-index:1000 !important;' },
+                { id: 'lives', css: 'position:fixed !important; top:20px !important; left:20px !important; z-index:1000 !important;' },
+                { id: 'score', css: 'position:fixed !important; top:20px !important; right:20px !important; z-index:1000 !important;' },
+                { id: 'gems', css: 'position:fixed !important; top:60px !important; left:20px !important; z-index:1000 !important;' },
+                { id: 'distance', css: 'position:fixed !important; top:60px !important; right:20px !important; z-index:1000 !important;' },
+                { id: 'energy', css: 'position:fixed !important; bottom:120px !important; left:20px !important; z-index:1000 !important;' }
+            ];
+            
+            fixes.forEach(fix => {
+                const element = document.getElementById(fix.id);
+                if (element) {
+                    element.style.cssText = fix.css;
+                    console.log(`🔧 修复 ${fix.id} 位置`);
+                }
+            });
+            
+            // 修复canvas
+            const canvas = document.getElementById('gameCanvas');
+            if (canvas) {
+                canvas.style.cssText = 'position:fixed !important; top:0 !important; left:0 !important; width:100vw !important; height:100vh !important; z-index:1 !important;';
+                console.log('🔧 修复 Canvas 位置');
+            }
+        }
     </script>
 </body>
 </html>
