@@ -2,7 +2,16 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport"        .game-board {
+            display: grid;
+            gap: 0.5px;       /* 更紧密的间距0.5px */
+            background: rgba(255, 182, 193, 0.5);
+            padding: 8px;     
+            border-radius: 15px;
+            border: 2px solid #ffb6c1;
+            margin-bottom: 15px;
+            justify-content: center;
+        }width=device-width, initial-scale=1.0">
     <title>蓓蓓的爱心连连看</title>
     <style>
         * {
@@ -28,7 +37,7 @@
             padding: 20px;
             box-shadow: 0 15px 35px rgba(255, 105, 180, 0.3);
             border: 3px solid #ff69b4;
-            max-width: 600px;
+            max-width: 800px;  /* 增加最大宽度 */
             width: 100%;
         }
 
@@ -99,9 +108,9 @@
 
         .game-board {
             display: grid;
-            gap: 3px;
+            gap: 1px;         /* 设置细微间距，美观且紧凑 */
             background: rgba(255, 182, 193, 0.5);
-            padding: 10px;
+            padding: 8px;     
             border-radius: 15px;
             border: 2px solid #ffb6c1;
             margin-bottom: 15px;
@@ -109,16 +118,16 @@
         }
 
         .cell {
-            width: 45px;
-            height: 45px;
+            width: 50px;      /* 默认大小，会被JS动态调整 */
+            height: 50px;     
             background: linear-gradient(145deg, #ffe4e1, #ffc0cb);
-            border: 2px solid #ffb6c1;
+            border: 1px solid #ffb6c1;  /* 恢复边框 */
             border-radius: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            font-size: 20px;
+            font-size: 22px;  /* 默认字体，会被JS动态调整 */
             transition: all 0.3s ease;
             position: relative;
             overflow: hidden;
@@ -325,9 +334,9 @@
     <script>
         // 游戏配置
         const difficulties = {
-            easy: { rows: 6, cols: 8, pairs: 18, timeBonus: 100 },     // 36个符号，12个空格
-            normal: { rows: 8, cols: 10, pairs: 30, timeBonus: 150 },  // 60个符号，20个空格  
-            hard: { rows: 10, cols: 12, pairs: 45, timeBonus: 200 }    // 90个符号，30个空格
+            easy: { rows: 6, cols: 8, pairs: 20, timeBonus: 200 },     // 8×6 = 48格，20对符号
+            normal: { rows: 8, cols: 10, pairs: 35, timeBonus: 250 },  // 10×8 = 80格，35对符号  
+            hard: { rows: 10, cols: 12, pairs: 50, timeBonus: 300 }    // 12×10 = 120格，50对符号
         };
 
         let currentDifficulty = 'easy';
@@ -342,12 +351,15 @@
         let gameTimer = null;
         let isPaused = false;
 
-        // 爱心符号集合
+        // 爱心符号集合 - 扩展版本，支持更大的游戏板
         const heartSymbols = [
             '💖', '💕', '💗', '💓', '💝', '💘', '💌', '💟',
             '❤️', '🧡', '💛', '💚', '💙', '💜', '🤍', '🖤',
-            '❣️', '💋', '🌹', '🌸', '🌺', '🌻', '🌷', '🥀',
-            '🎀', '💎', '⭐', '✨', '🌟', '💫', '🦋', '🌈'
+            '🌹', '🌸', '🌺', '🌻', '🌷', '🥀', '🎀', '💎',
+            '⭐', '✨', '🌟', '💫', '🦋', '🌈', '🌼', '🌵',
+            '🍀', '🌿', '🌱', '🌾', '🍃', '🌳', '🌲', '🎄',
+            '❣️', '💋', '👑', '💍', '🔮', '🎪', '🎭', '🎨',
+            '🎵', '🎶', '🎸', '🎹', '🎺', '🎻', '🥰', '😍'
         ];
 
         // 音频上下文（用于音效）
@@ -415,9 +427,52 @@
             const config = difficulties[currentDifficulty];
             const boardElement = document.getElementById('gameBoard');
             
-            // 设置网格
-            boardElement.style.gridTemplateColumns = `repeat(${config.cols}, 1fr)`;
-            boardElement.style.gridTemplateRows = `repeat(${config.rows}, 1fr)`;
+            console.log('=== 游戏初始化调试信息 ===');
+            console.log('当前难度:', currentDifficulty);
+            console.log('配置:', config);
+            console.log('总格子数:', config.rows * config.cols);
+            
+            // 设置网格 - 使用max-content让轨道自适应内容尺寸
+            boardElement.style.gridTemplateColumns = `repeat(${config.cols}, max-content)`;
+            boardElement.style.gridTemplateRows = `repeat(${config.rows}, max-content)`;
+            
+            console.log('设置网格轨道为 max-content');
+            console.log('列设置:', `repeat(${config.cols}, max-content)`);
+            console.log('行设置:', `repeat(${config.rows}, max-content)`);
+            
+            // 所有模式使用统一的格子大小和字体大小
+            const totalCells = config.rows * config.cols;
+            let cellSize, fontSize;
+            
+            // 统一使用50px格子和22px字体
+            cellSize = '50px';
+            fontSize = '22px';
+            
+            console.log('计算的格子大小:', cellSize);
+            console.log('计算的字体大小:', fontSize);
+            
+            // 现在轨道大小自适应内容，gap可以设置为合适的小值
+            boardElement.style.gap = '1px';
+            console.log('设置gap为: 1px (轨道已自适应内容)');
+            console.log('实际gap值:', boardElement.style.gap);
+            console.log('计算后的gap值:', getComputedStyle(boardElement).gap);
+            
+            // 清理之前的动态样式
+            const oldStyles = document.querySelectorAll('style[data-dynamic]');
+            oldStyles.forEach(style => style.remove());
+            
+            // 动态设置所有格子的大小
+            const style = document.createElement('style');
+            style.setAttribute('data-dynamic', 'true');
+            style.textContent = `
+                .cell {
+                    width: ${cellSize} !important;
+                    height: ${cellSize} !important;
+                    font-size: ${fontSize} !important;
+                }
+            `;
+            document.head.appendChild(style);
+            console.log('添加的动态样式:', style.textContent);
             
             // 重置游戏状态
             gameBoard = [];
@@ -425,8 +480,8 @@
             matchedPairs = 0;
             totalPairs = config.pairs;
             score = 0;
-            hints = 3;
-            shuffles = 2;
+            hints = 4;        // 适中的提示次数
+            shuffles = 3;     // 适中的重排次数
             
             // 生成图案对 - 确保有足够的符号种类
             const symbols = [];
@@ -553,6 +608,7 @@
             const pos1 = { row: Math.floor(index1 / config.cols), col: index1 % config.cols };
             const pos2 = { row: Math.floor(index2 / config.cols), col: index2 % config.cols };
             
+            // 正常连接规则
             // 检查直线连接（0个转弯）
             if (isDirectPath(pos1, pos2, config)) return true;
             
