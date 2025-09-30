@@ -141,6 +141,10 @@
                 💝 蓓蓓的爱心连连看 💝
                 <br><small>连线消除 + 3难度模式 + 智能提示</small>
             </button>
+            <button class="game-btn primary" onclick="makeQR('memory-flip')">
+                🧩 蓓蓓的记忆翻牌 🧩
+                <br><small>记忆训练 + 可爱图案 + 音效反馈</small>
+            </button>
             <button class="game-btn primary" onclick="makeQR('pink-heart')">
                 💖 蓓蓓的爱心战机 v3.0 💖
                 <br><small>爱心敌机 + 粉色飞机 + 自动射击</small>
@@ -191,6 +195,10 @@
                 // 蓓蓓爱心连连看
                 url = 'https://jasper-lee0320.github.io/gamesforbb/beibei-heart-match.html';
                 title = '💝 蓓蓓的爱心连连看';
+            } else if (type === 'memory-flip') {
+                // 蓓蓓记忆翻牌 - 新增游戏
+                url = 'https://jasper-lee0320.github.io/gamesforbb/beibei-memory-flip.html';
+                title = '🧩 蓓蓓的记忆翻牌';
             } else if (type === 'pink-heart') {
                 // 蓓蓓粉色爱心战机 v3.0
                 url = 'https://jasper-lee0320.github.io/gamesforbb/beibei-pink-heart-fighter.html';
