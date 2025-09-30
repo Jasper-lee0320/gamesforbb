@@ -2,16 +2,7 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport"        .game-board {
-            display: grid;
-            gap: 0.5px;       /* 更紧密的间距0.5px */
-            background: rgba(255, 182, 193, 0.5);
-            padding: 8px;     
-            border-radius: 15px;
-            border: 2px solid #ffb6c1;
-            margin-bottom: 15px;
-            justify-content: center;
-        }width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>蓓蓓的爱心连连看</title>
     <style>
         * {
@@ -412,47 +403,52 @@
             const config = difficulties[currentDifficulty];
             const boardElement = document.getElementById('gameBoard');
             
-            console.log('=== 游戏初始化调试信息 ===');
-            console.log('当前难度:', currentDifficulty);
-            console.log('配置:', config);
-            console.log('总格子数:', config.rows * config.cols);
-            
-            // 确保在测量前清空，避免旧元素影响尺寸
+            // 确保在测量前清空
             boardElement.innerHTML = '';
-            
-            // 移除之前动态添加的 style 标签（如果有的话）
             const oldStyles = document.querySelectorAll('style[data-dynamic]');
             oldStyles.forEach(style => style.remove());
             
-            // === ✨ 全新的响应式计算逻辑 ✨ ===
-            const gap = 2; // 定义一个统一的间距值 (单位: px)
-            const boardPadding = 8 * 2; // game-board 的左右 padding 总和
-            // 获取 game-container 的可用宽度
-            const containerWidth = document.querySelector('.game-container').clientWidth; 
-            // 减去游戏板的 padding 和容器的 padding
-            const boardAvailableWidth = containerWidth - (20 * 2) - boardPadding;
+            // === ✨ 全新升级的响应式计算逻辑 (同时考虑宽度和高度) ✨ ===
 
-            // 计算每个格子应该有的宽度
-            let cellSize = Math.floor((boardAvailableWidth - (config.cols - 1) * gap) / config.cols);
+            // --- 1. 获取所有非游戏板元素的高度 ---
+            const headerHeight = document.querySelector('.game-header').offsetHeight;
+            const infoHeight = document.querySelector('.game-info').offsetHeight;
+            const progressHeight = document.querySelector('.progress-bar').offsetHeight;
+            const controlsHeight = document.querySelector('.game-controls').offsetHeight;
+            // 页面和容器的垂直内边距总和 (body:10*2 + container:20*2)
+            const totalVerticalPadding = (10 * 2) + (20 * 2);
+            // 游戏板自身的垂直内边距
+            const boardVerticalPadding = 8 * 2;
+            const gap = 4; // 稍微增大间距，看起来更清晰
 
-            // 为了防止在超大屏幕上格子变得过大，可以设置一个最大值
-            const maxCellSize = 60; // 例如，最大不超过60px
+            // --- 2. 基于可用高度计算格子大小 ---
+            const availableHeight = window.innerHeight - totalVerticalPadding - headerHeight - infoHeight - progressHeight - controlsHeight;
+            const cellSizeBasedOnHeight = Math.floor((availableHeight - boardVerticalPadding - ((config.rows - 1) * gap)) / config.rows);
+
+            // --- 3. 基于可用宽度计算格子大小 ---
+            const containerWidth = document.querySelector('.game-container').clientWidth;
+            // 容器的水平内边距(20*2) + 游戏板的水平内边距(8*2)
+            const boardAvailableWidth = containerWidth - (20 * 2) - (8 * 2);
+            const cellSizeBasedOnWidth = Math.floor((boardAvailableWidth - ((config.cols - 1) * gap)) / config.cols);
+
+            // --- 4. 选择更小的值，确保游戏板能完整放入屏幕 ---
+            let cellSize = Math.min(cellSizeBasedOnWidth, cellSizeBasedOnHeight);
+
+            // --- 5. 设置一个最大尺寸，防止在电脑大屏幕上格子过大 ---
+            const maxCellSize = 65;
             cellSize = Math.min(cellSize, maxCellSize);
-            
+
             // 根据格子大小动态计算字体大小
-            let fontSize = Math.floor(cellSize * 0.5);
-            
-            console.log('容器宽度:', containerWidth);
-            console.log('可用宽度:', boardAvailableWidth);
-            console.log('计算的格子大小:', cellSize);
-            console.log('计算的字体大小:', fontSize);
+            let fontSize = Math.floor(cellSize * 0.55); // 稍微增大字体比例
+
+            console.log(`可用 W/H: ${boardAvailableWidth} / ${availableHeight}`);
+            console.log(`格子大小(基于宽度): ${cellSizeBasedOnWidth}, (基于高度): ${cellSizeBasedOnHeight}`);
+            console.log(`最终格子大小: ${cellSize}px, 字体大小: ${fontSize}px`);
 
             // 将计算好的布局应用到游戏板
             boardElement.style.gap = `${gap}px`;
             boardElement.style.gridTemplateColumns = `repeat(${config.cols}, ${cellSize}px)`;
             boardElement.style.gridTemplateRows = `repeat(${config.rows}, ${cellSize}px)`;
-            
-            console.log('设置网格:', `repeat(${config.cols}, ${cellSize}px)`);
             // === ✨ 响应式计算逻辑结束 ✨ ===
             
             // 重置游戏状态
