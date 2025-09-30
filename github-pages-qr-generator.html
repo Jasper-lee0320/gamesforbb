@@ -143,9 +143,13 @@
         </div>
 
         <div class="games">
-            <button class="game-btn primary" onclick="makeQR('pages-plane')">
-                🚀 飞机大战 (GitHub Pages版)
-                <br><small>启用Pages后扫码即玩</small>
+            <button class="game-btn primary" onclick="makeQR('beibei-fighter')">
+                🚀 蓓蓓的太空战机 (最新版)
+                <br><small>专属定制版本</small>
+            </button>
+            <button class="game-btn" onclick="makeQR('pages-plane')">
+                🚀 飞机大战 (旧版)
+                <br><small>原版游戏</small>
             </button>
             <button class="game-btn" onclick="makeQR('pages-snake')">
                 🐍 贪吃蛇游戏
@@ -190,10 +194,14 @@
             let url = '';
             let title = '';
 
-            if (type === 'pages-plane') {
+            if (type === 'beibei-fighter') {
+                // 蓓蓓专属太空战机
+                url = 'https://jasper-lee0320.github.io/gamesforbb/beibei-space-fighter.html';
+                title = '🚀 蓓蓓的太空战机 (最新版)';
+            } else if (type === 'pages-plane') {
                 // GitHub Pages链接
                 url = 'https://jasper-lee0320.github.io/gamesforbb/customized-plane-game.html';
-                title = '🚀 飞机大战 (GitHub Pages)';
+                title = '🚀 飞机大战 (旧版)';
             } else if (type === 'pages-snake') {
                 url = 'https://jasper-lee0320.github.io/gamesforbb/snake-game.html';
                 title = '🐍 贪吃蛇游戏';
@@ -282,7 +290,7 @@
 
         // 页面加载时显示说明
         window.onload = () => {
-            showMessage('请先启用GitHub Pages，然后生成游戏二维码', 'warning');
+            setTimeout(() => makeQR('beibei-fighter'), 500);
         };
     </script>
 </body>
