@@ -127,19 +127,9 @@
         <h1>💖 蓓蓓的游戏中心</h1>
         <p style="color: #666;">专为蓓蓓打造的精品游戏合集</p>
         
-        <div class="info warning">
-            <strong>⚠️ 当前状态：</strong><br>
-            蓓蓓的游戏托管在GitHub Pages上，需要启用后才能正常访问。<br>
-            请按照下方步骤操作：
-        </div>
-
-        <div class="step">
-            <strong>📋 启用GitHub Pages步骤：</strong><br>
-            1. 访问：https://github.com/Jasper-lee0320/gamesforbb<br>
-            2. 点击 Settings → Pages<br>
-            3. Source选择 "Deploy from a branch"<br>
-            4. Branch选择 "main"<br>
-            5. 点击 Save
+        <div class="info success">
+            <strong>✅ 游戏已就绪！</strong><br>
+            所有游戏均已部署在 GitHub Pages 上，可以直接游玩 🎮
         </div>
 
         <div class="games">
@@ -163,7 +153,7 @@
 
         <div id="qrArea">
             <p>📱 选择游戏生成二维码</p>
-            <p style="color: #999; font-size: 12px;">启用GitHub Pages后，即可畅玩蓓蓓的专属游戏</p>
+            <p style="color: #999; font-size: 12px;">扫码即可畅玩蓓蓓的专属游戏</p>
         </div>
 
         <div>
@@ -173,7 +163,6 @@
         <div class="buttons">
             <button class="btn" onclick="copyLink()">📋 复制链接</button>
             <button class="btn" onclick="openLink()">🔗 测试链接</button>
-            <button class="btn" onclick="checkPages()">✅ 检查Pages状态</button>
         </div>
 
         <div id="message" style="margin: 10px 0; display: none;"></div>
@@ -262,12 +251,6 @@
             
             window.open(gameLink, '_blank');
             showMessage('链接已在新窗口打开！', 'success');
-        }
-
-        function checkPages() {
-            const pagesUrl = 'https://github.com/Jasper-lee0320/gamesforbb/settings/pages';
-            window.open(pagesUrl, '_blank');
-            showMessage('已打开GitHub Pages设置页面，请按步骤启用Pages服务', 'success');
         }
 
         function showMessage(text, type) {
