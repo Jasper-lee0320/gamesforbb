@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jasper游戏二维码生成器 - 可用版</title>
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            font-family: Arial, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            text-align: center;
+            max-width: 500px;
+            width: 100%;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        .games {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .game-btn {
+            background: linear-gradient(45deg, #ff6b6b, #ffa500);
+            color: white;
+            border: none;
+            padding: 20px;
+            border-radius: 15px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: transform 0.3s;
+        }
+        .game-btn:hover {
+            transform: translateY(-3px);
+        }
+        #qrArea {
+            margin: 20px 0;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 15px;
+            min-height: 250px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        #qrArea img {
+            max-width: 200px;
+            border: 2px solid #667eea;
+            border-radius: 10px;
+            margin: 10px;
+        }
+        .buttons {
+            margin: 20px 0;
+        }
+        .btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            margin: 5px;
+            cursor: pointer;
+        }
+        textarea {
+            width: 100%;
+            height: 60px;
+            margin: 10px 0;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 12px;
+        }
+        .info {
+            background: #d4edda;
+            color: #155724;
+            padding: 10px;
+            border-radius: 8px;
+            margin: 15px 0;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎮 Jasper的游戏二维码</h1>
+        <p style="color: #666;">选择游戏生成二维码，扫码即可在手机上玩！</p>
+        
+        <div class="info">
+            <strong>✅ 直接可玩链接：</strong><br>
+            所有游戏都可以通过GitHub直接访问，无需GitHub Pages配置
+        </div>
+        
+        <div class="games">
+            <button class="game-btn" onclick="makeQR('plane')">
+                🚀 飞机大战<br><small>触屏射击</small>
+            </button>
+            <button class="game-btn" onclick="makeQR('snake')">
+                🐍 贪吃蛇<br><small>滑动控制</small>
+            </button>
+            <button class="game-btn" onclick="makeQR('puzzle')">
+                🧩 数字拼图<br><small>点击移动</small>
+            </button>
+            <button class="game-btn" onclick="makeQR('github')">
+                📂 所有游戏<br><small>GitHub仓库</small>
+            </button>
+        </div>
+
+        <div id="qrArea">
+            <p>📱 选择游戏生成二维码</p>
+        </div>
+
+        <div>
+            <textarea id="linkArea" placeholder="生成的链接会显示在这里..." readonly></textarea>
+        </div>
+
+        <div class="buttons">
+            <button class="btn" onclick="copyLink()">📋 复制链接</button>
+            <button class="btn" onclick="openLink()">🔗 打开链接</button>
+        </div>
+
+        <div id="message" style="margin: 10px 0; display: none;"></div>
+    </div>
+
+    <script>
+        let gameLink = '';
+
+        function makeQR(type) {
+            let url = '';
+            let title = '';
+
+            if (type === 'plane') {
+                // 使用GitHub的raw链接，可以直接在浏览器中运行
+                url = 'https://raw.githubusercontent.com/Jasper-lee0320/gamesforbb/main/customized-plane-game.html';
+                title = '🚀 飞机大战';
+            } else if (type === 'snake') {
+                url = 'https://raw.githubusercontent.com/Jasper-lee0320/gamesforbb/main/snake-game.html';
+                title = '🐍 贪吃蛇';
+            } else if (type === 'puzzle') {
+                // 使用现有的拼图游戏
+                url = 'https://raw.githubusercontent.com/Jasper-lee0320/gamesforbb/main/qr-code-game-generator.html';
+                title = '🧩 二维码拼图';
+            } else if (type === 'github') {
+                url = 'https://github.com/Jasper-lee0320/gamesforbb';
+                title = '📂 所有游戏';
+            }
+
+            gameLink = url;
+            document.getElementById('linkArea').value = url;
+            showQR(url, title);
+            showMessage(title + ' 二维码生成成功！扫码即可直接游玩！', 'success');
+        }
+
+        function showQR(url, title) {
+            const qr1 = 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=' + encodeURIComponent(url);
+            const qr2 = 'https://chart.googleapis.com/chart?chs=200x200&cht=qr&chl=' + encodeURIComponent(url);
+            
+            document.getElementById('qrArea').innerHTML = 
+                '<h4>📱 ' + title + '</h4>' +
+                '<img src="' + qr1 + '" onerror="this.src=\'' + qr2 + '\'" alt="QR Code">' +
+                '<p style="color: #666; font-size: 12px; margin-top: 10px;">扫描二维码直接在手机上玩游戏</p>';
+        }
+
+        function copyLink() {
+            if (!gameLink) {
+                showMessage('请先选择一个游戏！', 'error');
+                return;
+            }
+            
+            document.getElementById('linkArea').select();
+            try {
+                navigator.clipboard.writeText(gameLink).then(() => {
+                    showMessage('链接已复制到剪贴板！', 'success');
+                }).catch(() => {
+                    document.execCommand('copy');
+                    showMessage('链接已复制到剪贴板！', 'success');
+                });
+            } catch {
+                document.execCommand('copy');
+                showMessage('链接已复制到剪贴板！', 'success');
+            }
+        }
+
+        function openLink() {
+            if (!gameLink) {
+                showMessage('请先选择一个游戏！', 'error');
+                return;
+            }
+            
+            window.open(gameLink, '_blank');
+            showMessage('链接已在新窗口打开！', 'success');
+        }
+
+        function showMessage(text, type) {
+            const msg = document.getElementById('message');
+            msg.textContent = text;
+            msg.style.display = 'block';
+            msg.style.color = type === 'success' ? 'green' : 'red';
+            setTimeout(() => msg.style.display = 'none', 3000);
+        }
+
+        // 页面加载时自动生成飞机大战游戏二维码
+        window.onload = () => {
+            setTimeout(() => makeQR('plane'), 500);
+        };
+    </script>
+</body>
+</html>

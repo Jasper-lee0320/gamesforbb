@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jasper游戏中心 - GitHub Pages版</title>
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            font-family: Arial, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            text-align: center;
+            max-width: 500px;
+            width: 100%;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        .games {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .game-btn {
+            background: linear-gradient(45deg, #ff6b6b, #ffa500);
+            color: white;
+            border: none;
+            padding: 20px;
+            border-radius: 15px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: transform 0.3s;
+        }
+        .game-btn:hover {
+            transform: translateY(-3px);
+        }
+        .game-btn.primary {
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            font-size: 18px;
+            font-weight: bold;
+        }
+        .game-btn.github {
+            background: linear-gradient(45deg, #333, #555);
+        }
+        #qrArea {
+            margin: 20px 0;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 15px;
+            min-height: 280px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        #qrArea img {
+            max-width: 220px;
+            border: 2px solid #667eea;
+            border-radius: 10px;
+            margin: 10px;
+        }
+        .buttons {
+            margin: 20px 0;
+        }
+        .btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            margin: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        textarea {
+            width: 100%;
+            height: 80px;
+            margin: 10px 0;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 12px;
+            resize: vertical;
+        }
+        .info {
+            background: #e7f3ff;
+            color: #0066cc;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            font-size: 13px;
+            text-align: left;
+        }
+        .warning {
+            background: #fff3cd;
+            color: #856404;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+            text-align: center;
+        }
+        .step {
+            margin: 10px 0;
+            padding: 10px;
+            background: #f8f9fa;
+            border-left: 4px solid #667eea;
+            text-align: left;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎮 Jasper的游戏中心</h1>
+        <p style="color: #666;">安全稳定的游戏二维码生成器</p>
+        
+        <div class="info warning">
+            <strong>⚠️ 当前状态：</strong><br>
+            由于网络安全限制，需要启用GitHub Pages才能正常访问游戏。<br>
+            请按照下方步骤操作：
+        </div>
+
+        <div class="step">
+            <strong>📋 启用GitHub Pages步骤：</strong><br>
+            1. 访问：https://github.com/Jasper-lee0320/gamesforbb<br>
+            2. 点击 Settings → Pages<br>
+            3. Source选择 "Deploy from a branch"<br>
+            4. Branch选择 "main"<br>
+            5. 点击 Save
+        </div>
+
+        <div class="games">
+            <button class="game-btn primary" onclick="makeQR('pages-plane')">
+                🚀 飞机大战 (GitHub Pages版)
+                <br><small>启用Pages后扫码即玩</small>
+            </button>
+            <button class="game-btn" onclick="makeQR('pages-snake')">
+                🐍 贪吃蛇游戏
+                <br><small>GitHub Pages版本</small>
+            </button>
+            <button class="game-btn github" onclick="makeQR('github')">
+                📂 查看源代码仓库
+                <br><small>GitHub仓库主页</small>
+            </button>
+        </div>
+
+        <div id="qrArea">
+            <p>📱 选择游戏生成二维码</p>
+            <p style="color: #999; font-size: 12px;">启用GitHub Pages后，二维码链接将直接可用</p>
+        </div>
+
+        <div>
+            <textarea id="linkArea" placeholder="生成的链接会显示在这里...&#10;&#10;GitHub Pages链接格式：&#10;https://jasper-lee0320.github.io/gamesforbb/游戏文件名.html" readonly></textarea>
+        </div>
+
+        <div class="buttons">
+            <button class="btn" onclick="copyLink()">📋 复制链接</button>
+            <button class="btn" onclick="openLink()">🔗 测试链接</button>
+            <button class="btn" onclick="checkPages()">✅ 检查Pages状态</button>
+        </div>
+
+        <div id="message" style="margin: 10px 0; display: none;"></div>
+
+        <div class="info">
+            <strong>💡 为什么选择GitHub Pages？</strong><br>
+            • ✅ 官方服务，安全可靠<br>
+            • ✅ 不会被网络安全软件拦截<br>
+            • ✅ 访问速度快，稳定性好<br>
+            • ✅ 支持自定义域名
+        </div>
+    </div>
+
+    <script>
+        let gameLink = '';
+
+        function makeQR(type) {
+            let url = '';
+            let title = '';
+
+            if (type === 'pages-plane') {
+                // GitHub Pages链接
+                url = 'https://jasper-lee0320.github.io/gamesforbb/customized-plane-game.html';
+                title = '🚀 飞机大战 (GitHub Pages)';
+            } else if (type === 'pages-snake') {
+                url = 'https://jasper-lee0320.github.io/gamesforbb/snake-game.html';
+                title = '🐍 贪吃蛇游戏';
+            } else if (type === 'github') {
+                url = 'https://github.com/Jasper-lee0320/gamesforbb';
+                title = '📂 GitHub仓库';
+            }
+
+            gameLink = url;
+            document.getElementById('linkArea').value = url;
+            showQR(url, title);
+            
+            if (type.startsWith('pages-')) {
+                showMessage(title + ' 二维码已生成！如果无法访问，请先启用GitHub Pages', 'success');
+            } else {
+                showMessage(title + ' 二维码已生成！', 'success');
+            }
+        }
+
+        function showQR(url, title) {
+            // 使用两个不同的QR服务作为备用
+            const qr1 = 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=' + encodeURIComponent(url);
+            const qr2 = 'https://chart.googleapis.com/chart?chs=200x200&cht=qr&chl=' + encodeURIComponent(url);
+            
+            document.getElementById('qrArea').innerHTML = 
+                '<h4>📱 ' + title + '</h4>' +
+                '<img src="' + qr1 + '" onerror="this.src=\'' + qr2 + '\'" alt="QR Code">' +
+                '<p style="color: #666; font-size: 12px; margin-top: 10px;">扫描二维码访问游戏</p>' +
+                '<p style="color: #999; font-size: 10px;">如果访问失败，请确保已启用GitHub Pages</p>';
+        }
+
+        function copyLink() {
+            if (!gameLink) {
+                showMessage('请先选择一个游戏！', 'error');
+                return;
+            }
+            
+            document.getElementById('linkArea').select();
+            try {
+                navigator.clipboard.writeText(gameLink).then(() => {
+                    showMessage('链接已复制！分享给朋友即可游玩', 'success');
+                }).catch(() => {
+                    document.execCommand('copy');
+                    showMessage('链接已复制！分享给朋友即可游玩', 'success');
+                });
+            } catch {
+                document.execCommand('copy');
+                showMessage('链接已复制！分享给朋友即可游玩', 'success');
+            }
+        }
+
+        function openLink() {
+            if (!gameLink) {
+                showMessage('请先选择一个游戏！', 'error');
+                return;
+            }
+            
+            window.open(gameLink, '_blank');
+            showMessage('链接已在新窗口打开！', 'success');
+        }
+
+        function checkPages() {
+            const pagesUrl = 'https://github.com/Jasper-lee0320/gamesforbb/settings/pages';
+            window.open(pagesUrl, '_blank');
+            showMessage('已打开GitHub Pages设置页面，请按步骤启用Pages服务', 'success');
+        }
+
+        function showMessage(text, type) {
+            const msg = document.getElementById('message');
+            msg.textContent = text;
+            msg.style.display = 'block';
+            msg.style.padding = '10px';
+            msg.style.borderRadius = '8px';
+            msg.style.marginTop = '10px';
+            
+            if (type === 'success') {
+                msg.style.background = '#d4edda';
+                msg.style.color = '#155724';
+            } else {
+                msg.style.background = '#f8d7da';
+                msg.style.color = '#721c24';
+            }
+            
+            setTimeout(() => msg.style.display = 'none', 5000);
+        }
+
+        // 页面加载时显示说明
+        window.onload = () => {
+            showMessage('请先启用GitHub Pages，然后生成游戏二维码', 'warning');
+        };
+    </script>
+</body>
+</html>
