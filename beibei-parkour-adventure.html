@@ -1,0 +1,879 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🏃‍♀️ 蓓蓓的跑酷冒险</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            background: linear-gradient(45deg, #ff6b9d, #c44569, #f8b500, #ff6b9d);
+            background-size: 400% 400%;
+            animation: gradientShift 8s ease infinite;
+            color: white;
+            overflow: hidden;
+            user-select: none;
+        }
+        
+        @keyframes gradientShift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+        
+        .game-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+        }
+        
+        .game-ui {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            z-index: 100;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 15px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            min-width: 200px;
+        }
+        
+        .game-ui h2 {
+            margin-bottom: 10px;
+            color: #fff;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+        
+        .stats {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            font-size: 14px;
+            color: #fff;
+        }
+        
+        .controls {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 100;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 15px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            text-align: center;
+        }
+        
+        .game-world {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+        
+        .background {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 200%;
+            height: 100%;
+            background: linear-gradient(to bottom, 
+                rgba(255, 182, 193, 0.3) 0%, 
+                rgba(255, 105, 180, 0.2) 50%, 
+                rgba(255, 20, 147, 0.1) 100%);
+            animation: scrollBackground 20s linear infinite;
+        }
+        
+        @keyframes scrollBackground {
+            from { transform: translateX(0); }
+            to { transform: translateX(-50%); }
+        }
+        
+        .ground {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 200%;
+            height: 100px;
+            background: linear-gradient(45deg, #ff69b4, #ff1493);
+            border-top: 5px solid #fff;
+            animation: scrollGround 8s linear infinite;
+        }
+        
+        @keyframes scrollGround {
+            from { transform: translateX(0); }
+            to { transform: translateX(-50%); }
+        }
+        
+        .player {
+            position: absolute;
+            left: 100px;
+            bottom: 100px;
+            width: 50px;
+            height: 50px;
+            font-size: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 50;
+            transition: all 0.1s ease;
+            filter: drop-shadow(2px 2px 4px rgba(0,0,0,0.5));
+        }
+        
+        .player.jumping {
+            animation: jump 0.6s ease-in-out;
+        }
+        
+        @keyframes jump {
+            0% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-150px) rotate(180deg); }
+            100% { transform: translateY(0) rotate(360deg); }
+        }
+        
+        .player.sliding {
+            animation: slide 0.8s ease-in-out;
+        }
+        
+        @keyframes slide {
+            0% { transform: scaleY(1) scaleX(1); }
+            50% { transform: scaleY(0.5) scaleX(1.5); }
+            100% { transform: scaleY(1) scaleX(1); }
+        }
+        
+        .obstacle {
+            position: absolute;
+            bottom: 100px;
+            font-size: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 40;
+            animation: moveObstacle 4s linear forwards;
+            filter: drop-shadow(2px 2px 4px rgba(0,0,0,0.5));
+        }
+        
+        .obstacle.high {
+            bottom: 180px;
+        }
+        
+        @keyframes moveObstacle {
+            from { right: -60px; }
+            to { right: 100vw; }
+        }
+        
+        .collectible {
+            position: absolute;
+            bottom: 150px;
+            font-size: 25px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 40;
+            animation: moveCollectible 5s linear forwards, float 1s ease-in-out infinite alternate;
+            filter: drop-shadow(2px 2px 4px rgba(0,0,0,0.5));
+        }
+        
+        .collectible.high {
+            bottom: 250px;
+        }
+        
+        @keyframes moveCollectible {
+            from { right: -40px; }
+            to { right: 100vw; }
+        }
+        
+        @keyframes float {
+            from { transform: translateY(0px); }
+            to { transform: translateY(-10px); }
+        }
+        
+        .particle {
+            position: absolute;
+            pointer-events: none;
+            z-index: 60;
+            font-size: 20px;
+            animation: particleFloat 1s ease-out forwards;
+        }
+        
+        @keyframes particleFloat {
+            0% {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+            100% {
+                opacity: 0;
+                transform: translateY(-100px) scale(0.5);
+            }
+        }
+        
+        .score-popup {
+            position: absolute;
+            z-index: 70;
+            font-size: 18px;
+            font-weight: bold;
+            color: #fff;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+            animation: scoreFloat 1s ease-out forwards;
+            pointer-events: none;
+        }
+        
+        @keyframes scoreFloat {
+            0% {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+            100% {
+                opacity: 0;
+                transform: translateY(-80px) scale(1.2);
+            }
+        }
+        
+        .power-meter {
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 20px;
+            height: 200px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            border: 2px solid #fff;
+            overflow: hidden;
+            z-index: 100;
+        }
+        
+        .power-fill {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            background: linear-gradient(to top, #ff1493, #ff69b4, #ffb6c1);
+            border-radius: 8px;
+            transition: height 0.2s ease;
+        }
+        
+        .game-over {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255, 255, 255, 0.95);
+            color: #ff1493;
+            padding: 30px;
+            border-radius: 20px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            z-index: 200;
+            display: none;
+        }
+        
+        .restart-btn {
+            background: linear-gradient(45deg, #ff69b4, #ff1493);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 25px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: all 0.3s ease;
+        }
+        
+        .restart-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(255, 20, 147, 0.4);
+        }
+        
+        .achievements {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 15px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            min-width: 200px;
+            z-index: 100;
+        }
+        
+        .achievement {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 5px;
+            font-size: 12px;
+            opacity: 0.6;
+        }
+        
+        .achievement.unlocked {
+            opacity: 1;
+            animation: achievementUnlock 0.5s ease-out;
+        }
+        
+        @keyframes achievementUnlock {
+            0% { transform: scale(0.8); opacity: 0; }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <div class="game-ui">
+            <h2>🏃‍♀️ 蓓蓓跑酷</h2>
+            <div class="stats">
+                <div>💖 生命: <span id="lives">3</span></div>
+                <div>🌟 分数: <span id="score">0</span></div>
+                <div>💎 钻石: <span id="gems">0</span></div>
+                <div>📏 距离: <span id="distance">0</span>m</div>
+                <div>⚡ 能量: <span id="energy">100</span>%</div>
+            </div>
+        </div>
+        
+        <div class="achievements">
+            <h3>🏆 成就</h3>
+            <div class="achievement" id="firstRun">
+                <span>🌟</span>
+                <span>初次奔跑</span>
+            </div>
+            <div class="achievement" id="collector">
+                <span>💎</span>
+                <span>钻石收藏家</span>
+            </div>
+            <div class="achievement" id="jumper">
+                <span>🦘</span>
+                <span>跳跃大师</span>
+            </div>
+            <div class="achievement" id="survivor">
+                <span>💪</span>
+                <span>生存专家</span>
+            </div>
+            <div class="achievement" id="speedster">
+                <span>⚡</span>
+                <span>速度之王</span>
+            </div>
+        </div>
+        
+        <div class="power-meter">
+            <div class="power-fill" id="powerFill"></div>
+        </div>
+        
+        <div class="controls">
+            <div>🎮 控制方法:</div>
+            <div>空格键/点击 = 跳跃 | 下箭头/向下滑 = 滑铲</div>
+            <div>收集💎钻石，避开🚧障碍物！</div>
+        </div>
+        
+        <div class="game-world">
+            <div class="background"></div>
+            <div class="ground"></div>
+            <div class="player" id="player">🏃‍♀️</div>
+        </div>
+        
+        <div class="game-over" id="gameOver">
+            <h2>🎮 游戏结束</h2>
+            <div id="finalStats"></div>
+            <button class="restart-btn" onclick="restartGame()">🔄 重新开始</button>
+        </div>
+    </div>
+
+    <script>
+        // 游戏状态
+        const gameState = {
+            isPlaying: true,
+            lives: 3,
+            score: 0,
+            gems: 0,
+            distance: 0,
+            energy: 100,
+            speed: 1,
+            gameTime: 0,
+            isJumping: false,
+            isSliding: false,
+            jumpCount: 0,
+            gemsCollected: 0,
+            obstaclesAvoided: 0
+        };
+        
+        // 成就系统
+        const achievements = {
+            firstRun: { unlocked: false, name: '初次奔跑', desc: '开始你的第一次跑酷冒险' },
+            collector: { unlocked: false, name: '钻石收藏家', desc: '收集10个钻石' },
+            jumper: { unlocked: false, name: '跳跃大师', desc: '跳跃50次' },
+            survivor: { unlocked: false, name: '生存专家', desc: '跑过500米' },
+            speedster: { unlocked: false, name: '速度之王', desc: '达到最高速度' }
+        };
+        
+        // 音效系统
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        
+        function playSound(type) {
+            try {
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                
+                switch(type) {
+                    case 'jump':
+                        oscillator.frequency.setValueAtTime(300, audioContext.currentTime);
+                        oscillator.frequency.exponentialRampToValueAtTime(600, audioContext.currentTime + 0.2);
+                        break;
+                    case 'collect':
+                        oscillator.frequency.setValueAtTime(400, audioContext.currentTime);
+                        oscillator.frequency.exponentialRampToValueAtTime(800, audioContext.currentTime + 0.1);
+                        break;
+                    case 'hit':
+                        oscillator.frequency.setValueAtTime(150, audioContext.currentTime);
+                        oscillator.frequency.exponentialRampToValueAtTime(100, audioContext.currentTime + 0.3);
+                        break;
+                    case 'slide':
+                        oscillator.frequency.setValueAtTime(200, audioContext.currentTime);
+                        oscillator.frequency.linearRampToValueAtTime(150, audioContext.currentTime + 0.5);
+                        break;
+                }
+                
+                gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+                
+                oscillator.start();
+                oscillator.stop(audioContext.currentTime + 0.5);
+            } catch (e) {
+                console.log('🔊 音效播放失败:', e);
+            }
+        }
+        
+        // 初始化游戏
+        function initGame() {
+            console.log('🎮 初始化蓓蓓跑酷游戏');
+            updateUI();
+            unlockAchievement('firstRun');
+            startGameLoop();
+        }
+        
+        // 更新UI
+        function updateUI() {
+            document.getElementById('lives').textContent = gameState.lives;
+            document.getElementById('score').textContent = gameState.score;
+            document.getElementById('gems').textContent = gameState.gems;
+            document.getElementById('distance').textContent = Math.floor(gameState.distance);
+            document.getElementById('energy').textContent = Math.floor(gameState.energy);
+            document.getElementById('powerFill').style.height = gameState.energy + '%';
+        }
+        
+        // 玩家控制
+        const player = document.getElementById('player');
+        
+        function jump() {
+            if (!gameState.isPlaying || gameState.isJumping || gameState.energy < 20) return;
+            
+            console.log('🦘 蓓蓓跳跃!');
+            gameState.isJumping = true;
+            gameState.jumpCount++;
+            gameState.energy -= 20;
+            
+            player.classList.add('jumping');
+            playSound('jump');
+            createParticles(player.offsetLeft + 25, player.offsetTop + 25, '✨');
+            
+            setTimeout(() => {
+                gameState.isJumping = false;
+                player.classList.remove('jumping');
+            }, 600);
+            
+            // 检查跳跃成就
+            if (gameState.jumpCount >= 50) {
+                unlockAchievement('jumper');
+            }
+        }
+        
+        function slide() {
+            if (!gameState.isPlaying || gameState.isSliding || gameState.energy < 15) return;
+            
+            console.log('🏃‍♀️ 蓓蓓滑铲!');
+            gameState.isSliding = true;
+            gameState.energy -= 15;
+            
+            player.classList.add('sliding');
+            player.innerHTML = '🤸‍♀️';
+            playSound('slide');
+            createParticles(player.offsetLeft + 25, player.offsetTop + 25, '💨');
+            
+            setTimeout(() => {
+                gameState.isSliding = false;
+                player.classList.remove('sliding');
+                player.innerHTML = '🏃‍♀️';
+            }, 800);
+        }
+        
+        // 事件监听
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space' || e.code === 'ArrowUp') {
+                e.preventDefault();
+                jump();
+            } else if (e.code === 'ArrowDown') {
+                e.preventDefault();
+                slide();
+            }
+        });
+        
+        // 触摸控制
+        let touchStartY = 0;
+        document.addEventListener('touchstart', (e) => {
+            touchStartY = e.touches[0].clientY;
+        });
+        
+        document.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+        });
+        
+        document.addEventListener('touchend', (e) => {
+            const touchEndY = e.changedTouches[0].clientY;
+            const diff = touchStartY - touchEndY;
+            
+            if (Math.abs(diff) > 30) {
+                if (diff > 0) {
+                    jump(); // 向上滑动跳跃
+                } else {
+                    slide(); // 向下滑动滑铲
+                }
+            } else {
+                jump(); // 点击跳跃
+            }
+        });
+        
+        // 生成障碍物
+        function createObstacle() {
+            if (!gameState.isPlaying) return;
+            
+            const obstacle = document.createElement('div');
+            obstacle.className = 'obstacle';
+            
+            const types = ['🚧', '🪨', '⚡', '🌵', '🔥'];
+            const isHigh = Math.random() > 0.7;
+            
+            if (isHigh) {
+                obstacle.classList.add('high');
+                obstacle.innerHTML = '🦅'; // 高空障碍
+            } else {
+                obstacle.innerHTML = types[Math.floor(Math.random() * types.length)];
+            }
+            
+            document.querySelector('.game-world').appendChild(obstacle);
+            
+            console.log('🚧 生成障碍物:', obstacle.innerHTML, isHigh ? '(高空)' : '(地面)');
+            
+            // 碰撞检测
+            const checkCollision = setInterval(() => {
+                if (!document.body.contains(obstacle)) {
+                    clearInterval(checkCollision);
+                    return;
+                }
+                
+                const obstacleRect = obstacle.getBoundingClientRect();
+                const playerRect = player.getBoundingClientRect();
+                
+                if (obstacleRect.right >= playerRect.left && 
+                    obstacleRect.left <= playerRect.right &&
+                    obstacleRect.bottom >= playerRect.top && 
+                    obstacleRect.top <= playerRect.bottom) {
+                    
+                    // 检查是否可以避免碰撞
+                    const canAvoid = (isHigh && !gameState.isJumping) || 
+                                   (!isHigh && (gameState.isJumping || gameState.isSliding));
+                    
+                    if (!canAvoid) {
+                        console.log('💥 蓓蓓撞到障碍物!');
+                        hitObstacle();
+                        clearInterval(checkCollision);
+                    } else {
+                        console.log('✅ 成功避开障碍物!');
+                        gameState.obstaclesAvoided++;
+                        gameState.score += 20;
+                        showScorePopup(playerRect.left, playerRect.top, '+20');
+                    }
+                }
+            }, 16);
+            
+            // 清理障碍物
+            setTimeout(() => {
+                if (document.body.contains(obstacle)) {
+                    obstacle.remove();
+                    clearInterval(checkCollision);
+                }
+            }, 4000);
+        }
+        
+        // 生成收集品
+        function createCollectible() {
+            if (!gameState.isPlaying) return;
+            
+            const collectible = document.createElement('div');
+            collectible.className = 'collectible';
+            
+            const types = ['💎', '🌟', '💖', '⚡', '🍓'];
+            const isHigh = Math.random() > 0.5;
+            
+            if (isHigh) {
+                collectible.classList.add('high');
+            }
+            
+            collectible.innerHTML = types[Math.floor(Math.random() * types.length)];
+            document.querySelector('.game-world').appendChild(collectible);
+            
+            console.log('💎 生成收集品:', collectible.innerHTML, isHigh ? '(高空)' : '(低空)');
+            
+            // 收集检测
+            const checkCollection = setInterval(() => {
+                if (!document.body.contains(collectible)) {
+                    clearInterval(checkCollection);
+                    return;
+                }
+                
+                const collectibleRect = collectible.getBoundingClientRect();
+                const playerRect = player.getBoundingClientRect();
+                
+                if (collectibleRect.right >= playerRect.left && 
+                    collectibleRect.left <= playerRect.right &&
+                    collectibleRect.bottom >= playerRect.top && 
+                    collectibleRect.top <= playerRect.bottom) {
+                    
+                    console.log('🌟 收集到:', collectible.innerHTML);
+                    collectItem(collectible);
+                    clearInterval(checkCollection);
+                }
+            }, 16);
+            
+            // 清理收集品
+            setTimeout(() => {
+                if (document.body.contains(collectible)) {
+                    collectible.remove();
+                    clearInterval(checkCollection);
+                }
+            }, 5000);
+        }
+        
+        // 收集物品
+        function collectItem(item) {
+            const itemType = item.innerHTML;
+            let points = 0;
+            
+            switch(itemType) {
+                case '💎':
+                    gameState.gems++;
+                    points = 50;
+                    gameState.gemsCollected++;
+                    break;
+                case '🌟':
+                    points = 30;
+                    break;
+                case '💖':
+                    if (gameState.lives < 5) gameState.lives++;
+                    points = 25;
+                    break;
+                case '⚡':
+                    gameState.energy = Math.min(100, gameState.energy + 30);
+                    points = 20;
+                    break;
+                case '🍓':
+                    points = 15;
+                    break;
+            }
+            
+            gameState.score += points;
+            playSound('collect');
+            createParticles(item.offsetLeft, item.offsetTop, itemType);
+            showScorePopup(item.offsetLeft, item.offsetTop, '+' + points);
+            item.remove();
+            
+            // 检查钻石收集成就
+            if (gameState.gemsCollected >= 10) {
+                unlockAchievement('collector');
+            }
+        }
+        
+        // 撞击障碍物
+        function hitObstacle() {
+            gameState.lives--;
+            gameState.energy = Math.max(0, gameState.energy - 30);
+            playSound('hit');
+            
+            // 玩家闪烁效果
+            player.style.animation = 'none';
+            player.style.opacity = '0.5';
+            setTimeout(() => {
+                player.style.opacity = '1';
+            }, 1000);
+            
+            createParticles(player.offsetLeft + 25, player.offsetTop + 25, '💥');
+            
+            if (gameState.lives <= 0) {
+                endGame();
+            }
+        }
+        
+        // 创建粒子效果
+        function createParticles(x, y, emoji) {
+            for (let i = 0; i < 5; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.innerHTML = emoji;
+                particle.style.left = (x + Math.random() * 40 - 20) + 'px';
+                particle.style.top = (y + Math.random() * 40 - 20) + 'px';
+                document.body.appendChild(particle);
+                
+                setTimeout(() => particle.remove(), 1000);
+            }
+        }
+        
+        // 显示分数弹窗
+        function showScorePopup(x, y, text) {
+            const popup = document.createElement('div');
+            popup.className = 'score-popup';
+            popup.textContent = text;
+            popup.style.left = x + 'px';
+            popup.style.top = y + 'px';
+            document.body.appendChild(popup);
+            
+            setTimeout(() => popup.remove(), 1000);
+        }
+        
+        // 解锁成就
+        function unlockAchievement(id) {
+            if (achievements[id] && !achievements[id].unlocked) {
+                achievements[id].unlocked = true;
+                const element = document.getElementById(id);
+                element.classList.add('unlocked');
+                
+                console.log('🏆 解锁成就:', achievements[id].name);
+                showScorePopup(window.innerWidth/2, 100, '🏆 ' + achievements[id].name);
+                playSound('collect');
+            }
+        }
+        
+        // 游戏主循环
+        function startGameLoop() {
+            console.log('🔄 启动游戏循环');
+            
+            const gameLoop = setInterval(() => {
+                if (!gameState.isPlaying) {
+                    clearInterval(gameLoop);
+                    return;
+                }
+                
+                // 更新游戏状态
+                gameState.gameTime += 0.1;
+                gameState.distance += gameState.speed;
+                gameState.score += Math.floor(gameState.speed);
+                
+                // 恢复能量
+                if (gameState.energy < 100) {
+                    gameState.energy += 0.5;
+                }
+                
+                // 增加速度
+                if (gameState.gameTime % 10 === 0) {
+                    gameState.speed = Math.min(3, gameState.speed + 0.1);
+                    if (gameState.speed >= 2.5) {
+                        unlockAchievement('speedster');
+                    }
+                }
+                
+                // 检查距离成就
+                if (gameState.distance >= 500) {
+                    unlockAchievement('survivor');
+                }
+                
+                updateUI();
+            }, 100);
+            
+            // 生成障碍物
+            const obstacleInterval = setInterval(() => {
+                if (!gameState.isPlaying) {
+                    clearInterval(obstacleInterval);
+                    return;
+                }
+                createObstacle();
+            }, 2000 - (gameState.speed * 200));
+            
+            // 生成收集品
+            const collectibleInterval = setInterval(() => {
+                if (!gameState.isPlaying) {
+                    clearInterval(collectibleInterval);
+                    return;
+                }
+                createCollectible();
+            }, 1500);
+        }
+        
+        // 结束游戏
+        function endGame() {
+            console.log('🎮 游戏结束!', {
+                finalScore: gameState.score,
+                distance: Math.floor(gameState.distance),
+                gems: gameState.gems,
+                jumps: gameState.jumpCount
+            });
+            
+            gameState.isPlaying = false;
+            
+            const finalStats = document.getElementById('finalStats');
+            finalStats.innerHTML = `
+                <p>🌟 最终分数: ${gameState.score}</p>
+                <p>📏 跑过距离: ${Math.floor(gameState.distance)}米</p>
+                <p>💎 收集钻石: ${gameState.gems}个</p>
+                <p>🦘 总跳跃次数: ${gameState.jumpCount}次</p>
+                <p>🚧 避开障碍: ${gameState.obstaclesAvoided}个</p>
+            `;
+            
+            document.getElementById('gameOver').style.display = 'block';
+        }
+        
+        // 重新开始游戏
+        function restartGame() {
+            console.log('🔄 重新开始游戏');
+            
+            // 重置游戏状态
+            gameState.isPlaying = true;
+            gameState.lives = 3;
+            gameState.score = 0;
+            gameState.gems = 0;
+            gameState.distance = 0;
+            gameState.energy = 100;
+            gameState.speed = 1;
+            gameState.gameTime = 0;
+            gameState.isJumping = false;
+            gameState.isSliding = false;
+            gameState.jumpCount = 0;
+            gameState.gemsCollected = 0;
+            gameState.obstaclesAvoided = 0;
+            
+            // 清理UI
+            document.getElementById('gameOver').style.display = 'none';
+            player.style.opacity = '1';
+            player.innerHTML = '🏃‍♀️';
+            player.className = 'player';
+            
+            // 清理所有动态元素
+            document.querySelectorAll('.obstacle, .collectible, .particle, .score-popup').forEach(el => el.remove());
+            
+            updateUI();
+            startGameLoop();
+        }
+        
+        // 启动游戏
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('🎮 蓓蓓的跑酷冒险加载完成!');
+            initGame();
+        });
+    </script>
+</body>
+</html>
