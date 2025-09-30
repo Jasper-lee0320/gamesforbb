@@ -108,26 +108,27 @@
 
         .game-board {
             display: grid;
-            gap: 1px;         /* 设置细微间距，美观且紧凑 */
+            gap: 2px;         /* 默认间距，将由JS动态设置 */
             background: rgba(255, 182, 193, 0.5);
             padding: 8px;     
             border-radius: 15px;
             border: 2px solid #ffb6c1;
             margin-bottom: 15px;
             justify-content: center;
+            align-content: center;
         }
 
         .cell {
-            width: 50px;      /* 默认大小，会被JS动态调整 */
-            height: 50px;     
+            /* 移除固定尺寸，改用aspect-ratio保持正方形 */
+            aspect-ratio: 1 / 1;
             background: linear-gradient(145deg, #ffe4e1, #ffc0cb);
-            border: 1px solid #ffb6c1;  /* 恢复边框 */
+            border: 1px solid #ffb6c1;
             border-radius: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            font-size: 22px;  /* 默认字体，会被JS动态调整 */
+            /* 字体大小将由JS动态设置 */
             transition: all 0.3s ease;
             position: relative;
             overflow: hidden;
@@ -269,22 +270,6 @@
             transition: width 0.3s ease;
         }
 
-        @media (max-width: 480px) {
-            .cell {
-                width: 35px;
-                height: 35px;
-                font-size: 16px;
-            }
-            
-            .game-title {
-                font-size: 22px;
-            }
-            
-            .info-item {
-                font-size: 12px;
-                padding: 6px 12px;
-            }
-        }
     </style>
 </head>
 <body>
@@ -432,47 +417,43 @@
             console.log('配置:', config);
             console.log('总格子数:', config.rows * config.cols);
             
-            // 设置网格 - 使用max-content让轨道自适应内容尺寸
-            boardElement.style.gridTemplateColumns = `repeat(${config.cols}, max-content)`;
-            boardElement.style.gridTemplateRows = `repeat(${config.rows}, max-content)`;
+            // 确保在测量前清空，避免旧元素影响尺寸
+            boardElement.innerHTML = '';
             
-            console.log('设置网格轨道为 max-content');
-            console.log('列设置:', `repeat(${config.cols}, max-content)`);
-            console.log('行设置:', `repeat(${config.rows}, max-content)`);
-            
-            // 所有模式使用统一的格子大小和字体大小
-            const totalCells = config.rows * config.cols;
-            let cellSize, fontSize;
-            
-            // 统一使用50px格子和22px字体
-            cellSize = '50px';
-            fontSize = '22px';
-            
-            console.log('计算的格子大小:', cellSize);
-            console.log('计算的字体大小:', fontSize);
-            
-            // 现在轨道大小自适应内容，gap可以设置为合适的小值
-            boardElement.style.gap = '1px';
-            console.log('设置gap为: 1px (轨道已自适应内容)');
-            console.log('实际gap值:', boardElement.style.gap);
-            console.log('计算后的gap值:', getComputedStyle(boardElement).gap);
-            
-            // 清理之前的动态样式
+            // 移除之前动态添加的 style 标签（如果有的话）
             const oldStyles = document.querySelectorAll('style[data-dynamic]');
             oldStyles.forEach(style => style.remove());
             
-            // 动态设置所有格子的大小
-            const style = document.createElement('style');
-            style.setAttribute('data-dynamic', 'true');
-            style.textContent = `
-                .cell {
-                    width: ${cellSize} !important;
-                    height: ${cellSize} !important;
-                    font-size: ${fontSize} !important;
-                }
-            `;
-            document.head.appendChild(style);
-            console.log('添加的动态样式:', style.textContent);
+            // === ✨ 全新的响应式计算逻辑 ✨ ===
+            const gap = 2; // 定义一个统一的间距值 (单位: px)
+            const boardPadding = 8 * 2; // game-board 的左右 padding 总和
+            // 获取 game-container 的可用宽度
+            const containerWidth = document.querySelector('.game-container').clientWidth; 
+            // 减去游戏板的 padding 和容器的 padding
+            const boardAvailableWidth = containerWidth - (20 * 2) - boardPadding;
+
+            // 计算每个格子应该有的宽度
+            let cellSize = Math.floor((boardAvailableWidth - (config.cols - 1) * gap) / config.cols);
+
+            // 为了防止在超大屏幕上格子变得过大，可以设置一个最大值
+            const maxCellSize = 60; // 例如，最大不超过60px
+            cellSize = Math.min(cellSize, maxCellSize);
+            
+            // 根据格子大小动态计算字体大小
+            let fontSize = Math.floor(cellSize * 0.5);
+            
+            console.log('容器宽度:', containerWidth);
+            console.log('可用宽度:', boardAvailableWidth);
+            console.log('计算的格子大小:', cellSize);
+            console.log('计算的字体大小:', fontSize);
+
+            // 将计算好的布局应用到游戏板
+            boardElement.style.gap = `${gap}px`;
+            boardElement.style.gridTemplateColumns = `repeat(${config.cols}, ${cellSize}px)`;
+            boardElement.style.gridTemplateRows = `repeat(${config.rows}, ${cellSize}px)`;
+            
+            console.log('设置网格:', `repeat(${config.cols}, ${cellSize}px)`);
+            // === ✨ 响应式计算逻辑结束 ✨ ===
             
             // 重置游戏状态
             gameBoard = [];
@@ -509,11 +490,13 @@
             }
             
             // 创建游戏板
-            boardElement.innerHTML = '';
             for (let i = 0; i < config.rows * config.cols; i++) {
                 const cell = document.createElement('div');
                 cell.className = 'cell';
                 cell.dataset.index = i;
+                
+                // 动态设置计算出的字体大小
+                cell.style.fontSize = `${fontSize}px`;
                 
                 if (i < symbols.length) {
                     cell.dataset.symbol = symbols[i];
