@@ -1,0 +1,911 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>蓓蓓的爱心连连看</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #ffeef8, #ffe0f0, #ffd1e8);
+            font-family: 'Arial', sans-serif;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 10px;
+        }
+
+        .game-container {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 15px 35px rgba(255, 105, 180, 0.3);
+            border: 3px solid #ff69b4;
+            max-width: 600px;
+            width: 100%;
+        }
+
+        .game-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .game-title {
+            color: #ff1493;
+            font-size: 28px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(255, 105, 180, 0.3);
+        }
+
+        .game-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .info-item {
+            background: linear-gradient(45deg, #ff69b4, #ff1493);
+            color: white;
+            padding: 8px 15px;
+            border-radius: 15px;
+            font-weight: bold;
+            font-size: 14px;
+            box-shadow: 0 3px 10px rgba(255, 105, 180, 0.4);
+        }
+
+        .game-controls {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        .control-btn {
+            background: linear-gradient(45deg, #ff69b4, #ff1493);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(255, 105, 180, 0.4);
+        }
+
+        .control-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(255, 105, 180, 0.6);
+        }
+
+        .control-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .game-board {
+            display: grid;
+            gap: 3px;
+            background: rgba(255, 182, 193, 0.5);
+            padding: 10px;
+            border-radius: 15px;
+            border: 2px solid #ffb6c1;
+            margin-bottom: 15px;
+            justify-content: center;
+        }
+
+        .cell {
+            width: 45px;
+            height: 45px;
+            background: linear-gradient(145deg, #ffe4e1, #ffc0cb);
+            border: 2px solid #ffb6c1;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 20px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cell:hover {
+            transform: scale(1.1);
+            box-shadow: 0 5px 15px rgba(255, 105, 180, 0.6);
+        }
+
+        .cell.selected {
+            background: linear-gradient(145deg, #ff69b4, #ff1493);
+            color: white;
+            border-color: #ff1493;
+            transform: scale(1.15);
+            box-shadow: 0 0 20px rgba(255, 20, 147, 0.8);
+        }
+
+        .cell.matched {
+            background: linear-gradient(145deg, #90ee90, #32cd32);
+            border-color: #228b22;
+            animation: matchAnimation 0.6s ease forwards;
+            pointer-events: none;
+        }
+
+        .cell.hint {
+            animation: hintAnimation 1s ease infinite;
+        }
+
+        @keyframes matchAnimation {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.3) rotate(10deg); opacity: 1; }
+            100% { transform: scale(0); opacity: 0; visibility: hidden; }
+        }
+
+        @keyframes hintAnimation {
+            0%, 100% { box-shadow: 0 0 0 rgba(255, 215, 0, 0.7); }
+            50% { box-shadow: 0 0 20px rgba(255, 215, 0, 0.9); }
+        }
+
+        .connection-line {
+            position: absolute;
+            background: linear-gradient(90deg, #ff69b4, #ff1493, #ff69b4);
+            height: 4px;
+            border-radius: 2px;
+            z-index: 10;
+            opacity: 0.8;
+            animation: lineAnimation 0.5s ease;
+        }
+
+        @keyframes lineAnimation {
+            0% { opacity: 0; transform: scaleX(0); }
+            100% { opacity: 0.8; transform: scaleX(1); }
+        }
+
+        .particle {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background: #ff69b4;
+            border-radius: 50%;
+            pointer-events: none;
+            animation: particleAnimation 1s ease-out forwards;
+        }
+
+        @keyframes particleAnimation {
+            0% {
+                opacity: 1;
+                transform: scale(1);
+            }
+            100% {
+                opacity: 0;
+                transform: scale(0) translateY(-50px);
+            }
+        }
+
+        .game-over {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255, 255, 255, 0.95);
+            border: 3px solid #ff69b4;
+            border-radius: 20px;
+            padding: 30px;
+            text-align: center;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            z-index: 1000;
+            display: none;
+        }
+
+        .game-over h2 {
+            color: #ff1493;
+            margin-bottom: 15px;
+            font-size: 24px;
+        }
+
+        .game-over p {
+            color: #666;
+            margin-bottom: 20px;
+            font-size: 16px;
+        }
+
+        .difficulty-selector {
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .difficulty-btn {
+            background: linear-gradient(45deg, #ffb6c1, #ff69b4);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            margin: 0 5px;
+            border-radius: 15px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .difficulty-btn.active {
+            background: linear-gradient(45deg, #ff1493, #dc143c);
+            transform: scale(1.1);
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: rgba(255, 182, 193, 0.5);
+            border-radius: 4px;
+            margin-bottom: 15px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ff69b4, #ff1493);
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+
+        @media (max-width: 480px) {
+            .cell {
+                width: 35px;
+                height: 35px;
+                font-size: 16px;
+            }
+            
+            .game-title {
+                font-size: 22px;
+            }
+            
+            .info-item {
+                font-size: 12px;
+                padding: 6px 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <div class="game-header">
+            <h1 class="game-title">💖 蓓蓓的爱心连连看 💖</h1>
+            
+            <div class="difficulty-selector">
+                <span style="color: #ff1493; font-weight: bold;">难度选择：</span>
+                <button class="difficulty-btn active" onclick="setDifficulty('easy')">简单 8x6</button>
+                <button class="difficulty-btn" onclick="setDifficulty('normal')">普通 10x8</button>
+                <button class="difficulty-btn" onclick="setDifficulty('hard')">困难 12x10</button>
+            </div>
+        </div>
+
+        <div class="game-info">
+            <div class="info-item">⏱️ 时间: <span id="timer">00:00</span></div>
+            <div class="info-item">💯 分数: <span id="score">0</span></div>
+            <div class="info-item">🎯 剩余: <span id="remaining">0</span>对</div>
+            <div class="info-item">💡 提示: <span id="hints">3</span></div>
+        </div>
+
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressFill"></div>
+        </div>
+
+        <div class="game-controls">
+            <button class="control-btn" onclick="newGame()">🆕 新游戏</button>
+            <button class="control-btn" onclick="useHint()" id="hintBtn">💡 提示</button>
+            <button class="control-btn" onclick="shuffleBoard()" id="shuffleBtn">🔀 重排</button>
+            <button class="control-btn" onclick="pauseGame()" id="pauseBtn">⏸️ 暂停</button>
+        </div>
+
+        <div class="game-board" id="gameBoard"></div>
+    </div>
+
+    <div class="game-over" id="gameOverModal">
+        <h2 id="gameOverTitle">🎉 恭喜完成！</h2>
+        <p id="gameOverText">你太棒了！</p>
+        <p id="gameOverStats"></p>
+        <div style="margin-top: 20px;">
+            <button class="control-btn" onclick="newGame(); closeGameOver()">🆕 再来一局</button>
+            <button class="control-btn" onclick="closeGameOver()">❌ 关闭</button>
+        </div>
+    </div>
+
+    <script>
+        // 游戏配置
+        const difficulties = {
+            easy: { rows: 6, cols: 8, pairs: 18, timeBonus: 100 },     // 36个符号，12个空格
+            normal: { rows: 8, cols: 10, pairs: 30, timeBonus: 150 },  // 60个符号，20个空格  
+            hard: { rows: 10, cols: 12, pairs: 45, timeBonus: 200 }    // 90个符号，30个空格
+        };
+
+        let currentDifficulty = 'easy';
+        let gameBoard = [];
+        let selectedCells = [];
+        let matchedPairs = 0;
+        let totalPairs = 0;
+        let score = 0;
+        let hints = 3;
+        let shuffles = 2;
+        let gameStartTime = 0;
+        let gameTimer = null;
+        let isPaused = false;
+
+        // 爱心符号集合
+        const heartSymbols = [
+            '💖', '💕', '💗', '💓', '💝', '💘', '💌', '💟',
+            '❤️', '🧡', '💛', '💚', '💙', '💜', '🤍', '🖤',
+            '❣️', '💋', '🌹', '🌸', '🌺', '🌻', '🌷', '🥀',
+            '🎀', '💎', '⭐', '✨', '🌟', '💫', '🦋', '🌈'
+        ];
+
+        // 音频上下文（用于音效）
+        let audioContext;
+
+        function initAudio() {
+            try {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            } catch (e) {
+                console.log('音频不支持');
+            }
+        }
+
+        function playSound(type) {
+            if (!audioContext) return;
+
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+
+            switch (type) {
+                case 'select':
+                    oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
+                    gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
+                    oscillator.start(audioContext.currentTime);
+                    oscillator.stop(audioContext.currentTime + 0.1);
+                    break;
+                case 'match':
+                    oscillator.frequency.setValueAtTime(1000, audioContext.currentTime);
+                    oscillator.frequency.exponentialRampToValueAtTime(1500, audioContext.currentTime + 0.2);
+                    gainNode.gain.setValueAtTime(0.2, audioContext.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
+                    oscillator.start(audioContext.currentTime);
+                    oscillator.stop(audioContext.currentTime + 0.2);
+                    break;
+                case 'complete':
+                    // 胜利音效
+                    [1000, 1200, 1500, 2000].forEach((freq, i) => {
+                        const osc = audioContext.createOscillator();
+                        const gain = audioContext.createGain();
+                        osc.connect(gain);
+                        gain.connect(audioContext.destination);
+                        osc.frequency.setValueAtTime(freq, audioContext.currentTime + i * 0.1);
+                        gain.gain.setValueAtTime(0.1, audioContext.currentTime + i * 0.1);
+                        gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + i * 0.1 + 0.2);
+                        osc.start(audioContext.currentTime + i * 0.1);
+                        osc.stop(audioContext.currentTime + i * 0.1 + 0.2);
+                    });
+                    return;
+            }
+        }
+
+        function setDifficulty(level) {
+            currentDifficulty = level;
+            document.querySelectorAll('.difficulty-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            newGame();
+        }
+
+        function initializeGame() {
+            initAudio();
+            const config = difficulties[currentDifficulty];
+            const boardElement = document.getElementById('gameBoard');
+            
+            // 设置网格
+            boardElement.style.gridTemplateColumns = `repeat(${config.cols}, 1fr)`;
+            boardElement.style.gridTemplateRows = `repeat(${config.rows}, 1fr)`;
+            
+            // 重置游戏状态
+            gameBoard = [];
+            selectedCells = [];
+            matchedPairs = 0;
+            totalPairs = config.pairs;
+            score = 0;
+            hints = 3;
+            shuffles = 2;
+            
+            // 生成图案对 - 确保有足够的符号种类
+            const symbols = [];
+            const availableSymbols = [...heartSymbols]; // 复制符号数组
+            
+            // 随机选择不重复的符号来生成配对
+            for (let i = 0; i < config.pairs; i++) {
+                let symbolIndex;
+                if (i < availableSymbols.length) {
+                    // 前面用不重复的符号
+                    symbolIndex = Math.floor(Math.random() * availableSymbols.length);
+                    const symbol = availableSymbols.splice(symbolIndex, 1)[0];
+                    symbols.push(symbol, symbol); // 添加一对
+                } else {
+                    // 如果符号不够了，重新使用
+                    const symbol = heartSymbols[i % heartSymbols.length];
+                    symbols.push(symbol, symbol); // 添加一对
+                }
+            }
+            
+            // 随机打乱符号顺序
+            for (let i = symbols.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [symbols[i], symbols[j]] = [symbols[j], symbols[i]];
+            }
+            
+            // 创建游戏板
+            boardElement.innerHTML = '';
+            for (let i = 0; i < config.rows * config.cols; i++) {
+                const cell = document.createElement('div');
+                cell.className = 'cell';
+                cell.dataset.index = i;
+                
+                if (i < symbols.length) {
+                    cell.dataset.symbol = symbols[i];
+                    cell.textContent = symbols[i];
+                    cell.addEventListener('click', () => selectCell(i));
+                } else {
+                    cell.style.visibility = 'hidden'; // 隐藏多余的格子
+                }
+                
+                boardElement.appendChild(cell);
+                gameBoard.push(cell);
+            }
+            
+            updateUI();
+            startTimer();
+        }
+
+        function selectCell(index) {
+            if (isPaused) return;
+            
+            const cell = gameBoard[index];
+            if (!cell || cell.classList.contains('matched') || cell.classList.contains('selected')) {
+                return;
+            }
+            
+            // 清除提示效果
+            document.querySelectorAll('.cell').forEach(c => c.classList.remove('hint'));
+            
+            cell.classList.add('selected');
+            selectedCells.push(index);
+            playSound('select');
+            
+            if (selectedCells.length === 2) {
+                setTimeout(() => checkMatch(), 300);
+            }
+        }
+
+        function checkMatch() {
+            const [index1, index2] = selectedCells;
+            const cell1 = gameBoard[index1];
+            const cell2 = gameBoard[index2];
+            
+            // 检查图案是否相同
+            if (cell1.dataset.symbol !== cell2.dataset.symbol) {
+                // 匹配失败
+                setTimeout(() => {
+                    cell1.classList.remove('selected');
+                    cell2.classList.remove('selected');
+                }, 500);
+                selectedCells = [];
+                return;
+            }
+            
+            // 检查是否有有效路径连接
+            if (canConnect(index1, index2)) {
+                // 匹配成功
+                cell1.classList.remove('selected');
+                cell2.classList.remove('selected');
+                cell1.classList.add('matched');
+                cell2.classList.add('matched');
+                
+                // 创建连接线动画
+                drawConnectionLine(cell1, cell2);
+                
+                // 创建粒子效果
+                createParticles(cell1);
+                createParticles(cell2);
+                
+                matchedPairs++;
+                score += 100 + (hints * 10); // 剩余提示越多分数越高
+                
+                playSound('match');
+                
+                // 检查游戏是否完成
+                if (matchedPairs === totalPairs) {
+                    setTimeout(() => gameComplete(), 500);
+                }
+            } else {
+                // 无有效路径连接
+                setTimeout(() => {
+                    cell1.classList.remove('selected');
+                    cell2.classList.remove('selected');
+                }, 500);
+            }
+            
+            selectedCells = [];
+            updateUI();
+        }
+
+        function canConnect(index1, index2) {
+            const config = difficulties[currentDifficulty];
+            const pos1 = { row: Math.floor(index1 / config.cols), col: index1 % config.cols };
+            const pos2 = { row: Math.floor(index2 / config.cols), col: index2 % config.cols };
+            
+            // 检查直线连接（0个转弯）
+            if (isDirectPath(pos1, pos2, config)) return true;
+            
+            // 检查一个转弯的连接
+            if (isOneCornerPath(pos1, pos2, config)) return true;
+            
+            // 检查两个转弯的连接
+            if (isTwoCornerPath(pos1, pos2, config)) return true;
+            
+            return false;
+        }
+        
+        function isDirectPath(pos1, pos2, config) {
+            // 同行
+            if (pos1.row === pos2.row) {
+                const minCol = Math.min(pos1.col, pos2.col);
+                const maxCol = Math.max(pos1.col, pos2.col);
+                for (let col = minCol + 1; col < maxCol; col++) {
+                    const index = pos1.row * config.cols + col;
+                    // 检查路径中是否有未被匹配的格子（有symbol且未matched的格子是障碍）
+                    if (gameBoard[index] && gameBoard[index].dataset.symbol && !gameBoard[index].classList.contains('matched')) {
+                        return false;
+                    }
+                }
+                return true;
+            }
+            
+            // 同列
+            if (pos1.col === pos2.col) {
+                const minRow = Math.min(pos1.row, pos2.row);
+                const maxRow = Math.max(pos1.row, pos2.row);
+                for (let row = minRow + 1; row < maxRow; row++) {
+                    const index = row * config.cols + pos1.col;
+                    // 检查路径中是否有未被匹配的格子（有symbol且未matched的格子是障碍）
+                    if (gameBoard[index] && gameBoard[index].dataset.symbol && !gameBoard[index].classList.contains('matched')) {
+                        return false;
+                    }
+                }
+                return true;
+            }
+            
+            return false;
+        }
+        
+        function isOneCornerPath(pos1, pos2, config) {
+            // 尝试拐点1: (pos1.row, pos2.col)
+            const corner1 = { row: pos1.row, col: pos2.col };
+            const corner1Index = corner1.row * config.cols + corner1.col;
+            
+            // 检查拐点是否可以通过（没有symbol或已经matched的格子可以通过）
+            if (corner1Index >= 0 && corner1Index < gameBoard.length) {
+                const corner1Cell = gameBoard[corner1Index];
+                const canPassCorner1 = !corner1Cell.dataset.symbol || corner1Cell.classList.contains('matched');
+                
+                if (canPassCorner1 && isDirectPath(pos1, corner1, config) && isDirectPath(corner1, pos2, config)) {
+                    return true;
+                }
+            }
+            
+            // 尝试拐点2: (pos2.row, pos1.col)
+            const corner2 = { row: pos2.row, col: pos1.col };
+            const corner2Index = corner2.row * config.cols + corner2.col;
+            
+            // 检查拐点是否可以通过（没有symbol或已经matched的格子可以通过）
+            if (corner2Index >= 0 && corner2Index < gameBoard.length) {
+                const corner2Cell = gameBoard[corner2Index];
+                const canPassCorner2 = !corner2Cell.dataset.symbol || corner2Cell.classList.contains('matched');
+                
+                if (canPassCorner2 && isDirectPath(pos1, corner2, config) && isDirectPath(corner2, pos2, config)) {
+                    return true;
+                }
+            }
+            
+            return false;
+        }
+        
+        function isTwoCornerPath(pos1, pos2, config) {
+            // 尝试水平扩展
+            for (let col = 0; col < config.cols; col++) {
+                if (col === pos1.col || col === pos2.col) continue;
+                
+                const mid1 = { row: pos1.row, col: col };
+                const mid2 = { row: pos2.row, col: col };
+                const mid1Index = mid1.row * config.cols + mid1.col;
+                const mid2Index = mid2.row * config.cols + mid2.col;
+                
+                if (mid1Index >= 0 && mid1Index < gameBoard.length && 
+                    mid2Index >= 0 && mid2Index < gameBoard.length) {
+                    
+                    const mid1Cell = gameBoard[mid1Index];
+                    const mid2Cell = gameBoard[mid2Index];
+                    const canPassMid1 = !mid1Cell.dataset.symbol || mid1Cell.classList.contains('matched');
+                    const canPassMid2 = !mid2Cell.dataset.symbol || mid2Cell.classList.contains('matched');
+                    
+                    if (canPassMid1 && canPassMid2 &&
+                        isDirectPath(pos1, mid1, config) && 
+                        isDirectPath(mid1, mid2, config) && 
+                        isDirectPath(mid2, pos2, config)) {
+                        return true;
+                    }
+                }
+            }
+            
+            // 尝试垂直扩展
+            for (let row = 0; row < config.rows; row++) {
+                if (row === pos1.row || row === pos2.row) continue;
+                
+                const mid1 = { row: row, col: pos1.col };
+                const mid2 = { row: row, col: pos2.col };
+                const mid1Index = mid1.row * config.cols + mid1.col;
+                const mid2Index = mid2.row * config.cols + mid2.col;
+                
+                if (mid1Index >= 0 && mid1Index < gameBoard.length && 
+                    mid2Index >= 0 && mid2Index < gameBoard.length) {
+                    
+                    const mid1Cell = gameBoard[mid1Index];
+                    const mid2Cell = gameBoard[mid2Index];
+                    const canPassMid1 = !mid1Cell.dataset.symbol || mid1Cell.classList.contains('matched');
+                    const canPassMid2 = !mid2Cell.dataset.symbol || mid2Cell.classList.contains('matched');
+                    
+                    if (canPassMid1 && canPassMid2 &&
+                        isDirectPath(pos1, mid1, config) && 
+                        isDirectPath(mid1, mid2, config) && 
+                        isDirectPath(mid2, pos2, config)) {
+                        return true;
+                    }
+                }
+            }
+            
+            return false;
+        }
+
+        function drawConnectionLine(cell1, cell2) {
+            const rect1 = cell1.getBoundingClientRect();
+            const rect2 = cell2.getBoundingClientRect();
+            const boardRect = document.getElementById('gameBoard').getBoundingClientRect();
+            
+            const x1 = rect1.left + rect1.width / 2 - boardRect.left;
+            const y1 = rect1.top + rect1.height / 2 - boardRect.top;
+            const x2 = rect2.left + rect2.width / 2 - boardRect.left;
+            const y2 = rect2.top + rect2.height / 2 - boardRect.top;
+            
+            const line = document.createElement('div');
+            line.className = 'connection-line';
+            
+            const length = Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2);
+            const angle = Math.atan2(y2 - y1, x2 - x1) * 180 / Math.PI;
+            
+            line.style.width = length + 'px';
+            line.style.left = x1 + 'px';
+            line.style.top = y1 + 'px';
+            line.style.transform = `rotate(${angle}deg)`;
+            line.style.transformOrigin = '0 50%';
+            
+            document.getElementById('gameBoard').appendChild(line);
+            
+            setTimeout(() => line.remove(), 500);
+        }
+
+        function createParticles(cell) {
+            const rect = cell.getBoundingClientRect();
+            const boardRect = document.getElementById('gameBoard').getBoundingClientRect();
+            
+            for (let i = 0; i < 8; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                
+                const x = rect.left + rect.width / 2 - boardRect.left;
+                const y = rect.top + rect.height / 2 - boardRect.top;
+                
+                particle.style.left = x + 'px';
+                particle.style.top = y + 'px';
+                particle.style.animationDelay = (i * 50) + 'ms';
+                
+                // 随机颜色
+                const colors = ['#ff69b4', '#ff1493', '#ffd700', '#ff6347', '#90ee90'];
+                particle.style.background = colors[Math.floor(Math.random() * colors.length)];
+                
+                document.getElementById('gameBoard').appendChild(particle);
+                
+                setTimeout(() => particle.remove(), 1000);
+            }
+        }
+
+        function useHint() {
+            if (hints <= 0 || isPaused) return;
+            
+            hints--;
+            
+            // 清除之前的提示
+            document.querySelectorAll('.cell').forEach(c => c.classList.remove('hint'));
+            
+            // 寻找可匹配且可连接的一对
+            const availableCells = gameBoard
+                .map((cell, index) => ({ cell, index }))
+                .filter(item => !item.cell.classList.contains('matched') && item.cell.dataset.symbol);
+            
+            for (let i = 0; i < availableCells.length; i++) {
+                for (let j = i + 1; j < availableCells.length; j++) {
+                    if (availableCells[i].cell.dataset.symbol === availableCells[j].cell.dataset.symbol &&
+                        canConnect(availableCells[i].index, availableCells[j].index)) {
+                        
+                        availableCells[i].cell.classList.add('hint');
+                        availableCells[j].cell.classList.add('hint');
+                        
+                        setTimeout(() => {
+                            availableCells[i].cell.classList.remove('hint');
+                            availableCells[j].cell.classList.remove('hint');
+                        }, 2000);
+                        
+                        updateUI();
+                        return;
+                    }
+                }
+            }
+            
+            // 如果没找到可连接的对，退还提示次数
+            hints++;
+            alert('当前没有可连接的匹配对，请尝试重新排列！');
+            updateUI();
+        }
+
+        function shuffleBoard() {
+            if (shuffles <= 0 || isPaused) return;
+            
+            shuffles--;
+            
+            // 获取所有未匹配的符号
+            const unmatchedSymbols = [];
+            gameBoard.forEach(cell => {
+                if (!cell.classList.contains('matched') && cell.dataset.symbol) {
+                    unmatchedSymbols.push(cell.dataset.symbol);
+                }
+            });
+            
+            // 随机打乱
+            for (let i = unmatchedSymbols.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [unmatchedSymbols[i], unmatchedSymbols[j]] = [unmatchedSymbols[j], unmatchedSymbols[i]];
+            }
+            
+            // 重新分配符号
+            let symbolIndex = 0;
+            gameBoard.forEach(cell => {
+                if (!cell.classList.contains('matched') && cell.dataset.symbol) {
+                    cell.dataset.symbol = unmatchedSymbols[symbolIndex];
+                    cell.textContent = unmatchedSymbols[symbolIndex];
+                    symbolIndex++;
+                }
+            });
+            
+            // 清除选中状态
+            selectedCells = [];
+            document.querySelectorAll('.cell').forEach(c => {
+                c.classList.remove('selected', 'hint');
+            });
+            
+            updateUI();
+        }
+
+        function pauseGame() {
+            isPaused = !isPaused;
+            const btn = document.getElementById('pauseBtn');
+            
+            if (isPaused) {
+                clearInterval(gameTimer);
+                btn.textContent = '▶️ 继续';
+                // 隐藏游戏板内容
+                document.querySelectorAll('.cell').forEach(cell => {
+                    if (!cell.classList.contains('matched')) {
+                        cell.style.opacity = '0.1';
+                    }
+                });
+            } else {
+                startTimer();
+                btn.textContent = '⏸️ 暂停';
+                // 显示游戏板内容
+                document.querySelectorAll('.cell').forEach(cell => {
+                    cell.style.opacity = '1';
+                });
+            }
+        }
+
+        function startTimer() {
+            gameStartTime = Date.now();
+            gameTimer = setInterval(() => {
+                if (!isPaused) {
+                    const elapsed = Math.floor((Date.now() - gameStartTime) / 1000);
+                    const minutes = Math.floor(elapsed / 60);
+                    const seconds = elapsed % 60;
+                    document.getElementById('timer').textContent = 
+                        `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                }
+            }, 1000);
+        }
+
+        function gameComplete() {
+            clearInterval(gameTimer);
+            
+            const elapsed = Math.floor((Date.now() - gameStartTime) / 1000);
+            const timeBonus = Math.max(0, difficulties[currentDifficulty].timeBonus - elapsed);
+            const finalScore = score + timeBonus + (hints * 50) + (shuffles * 100);
+            
+            playSound('complete');
+            
+            document.getElementById('gameOverTitle').textContent = '🎉 恭喜完成！';
+            document.getElementById('gameOverText').textContent = '你是连连看大师！';
+            document.getElementById('gameOverStats').innerHTML = `
+                <p>🏆 最终分数: <strong style="color: #ff1493;">${finalScore}</strong></p>
+                <p>⏱️ 用时: <strong>${Math.floor(elapsed / 60)}:${(elapsed % 60).toString().padStart(2, '0')}</strong></p>
+                <p>⚡ 时间奖励: <strong>+${timeBonus}</strong></p>
+                <p>💡 提示奖励: <strong>+${hints * 50}</strong></p>
+                <p>🔀 重排奖励: <strong>+${shuffles * 100}</strong></p>
+            `;
+            document.getElementById('gameOverModal').style.display = 'block';
+            
+            score = finalScore;
+            updateUI();
+        }
+
+        function closeGameOver() {
+            document.getElementById('gameOverModal').style.display = 'none';
+        }
+
+        function newGame() {
+            clearInterval(gameTimer);
+            isPaused = false;
+            document.getElementById('pauseBtn').textContent = '⏸️ 暂停';
+            initializeGame();
+        }
+
+        function updateUI() {
+            document.getElementById('score').textContent = score;
+            document.getElementById('remaining').textContent = totalPairs - matchedPairs;
+            document.getElementById('hints').textContent = hints;
+            
+            // 更新按钮状态
+            document.getElementById('hintBtn').disabled = hints <= 0;
+            document.getElementById('shuffleBtn').disabled = shuffles <= 0;
+            
+            // 更新进度条
+            const progress = (matchedPairs / totalPairs) * 100;
+            document.getElementById('progressFill').style.width = progress + '%';
+        }
+
+        // 初始化游戏
+        window.onload = () => {
+            newGame();
+        };
+
+        // 防止页面缩放影响游戏体验
+        document.addEventListener('gesturestart', e => e.preventDefault());
+        document.addEventListener('gesturechange', e => e.preventDefault());
+    </script>
+</body>
+</html>
