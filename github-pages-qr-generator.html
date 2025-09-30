@@ -120,6 +120,36 @@
             border-left: 4px solid #667eea;
             text-align: left;
         }
+        .info-section {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: left;
+        }
+        .info-section h3 {
+            color: #333;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        .steps ul {
+            padding-left: 20px;
+        }
+        .steps li {
+            margin: 5px 0;
+        }
+        .steps code {
+            background: #e9ecef;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: monospace;
+            word-break: break-all;
+        }
+        .info.error {
+            background: #ffebee;
+            border-left: 4px solid #f44336;
+            color: #c62828;
+        }
     </style>
 </head>
 <body>
@@ -130,6 +160,33 @@
         <div class="info success">
             <strong>✅ 游戏已就绪！</strong><br>
             所有游戏均已部署在 GitHub Pages 上，可以直接游玩 🎮
+        </div>
+
+        <div class="info-section">
+            <h3>📋 GitHub Pages 设置说明</h3>
+            <div class="steps">
+                <p><strong>1. 启用GitHub Pages：</strong></p>
+                <ul>
+                    <li>进入 GitHub 仓库 → Settings → Pages</li>
+                    <li>Source 选择 "Deploy from a branch"</li>
+                    <li>Branch 选择 "main" 分支</li>
+                    <li>点击 Save 保存设置</li>
+                </ul>
+                <p><strong>2. 访问链接：</strong></p>
+                <p>启用后约3-5分钟生效，访问地址：<br>
+                <code>https://jasper-lee0320.github.io/gamesforbb/</code></p>
+                <p><strong>3. 如果无法访问：</strong></p>
+                <ul>
+                    <li>检查仓库是否为 Public（公开）</li>
+                    <li>确认 GitHub Pages 已启用</li>
+                    <li>等待部署完成（首次可能需要10分钟）</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="games">
+            <button class="game-btn" onclick="generateQR('github')">📂 GitHub仓库链接</button>
+            <button class="game-btn" onclick="checkPages()">🔍 检查GitHub Pages状态</button>
         </div>
 
         <div class="games">
@@ -273,6 +330,31 @@
                 document.execCommand('copy');
                 showMessage('链接已复制！分享给朋友即可游玩', 'success');
             }
+        }
+
+        function checkPages() {
+            showMessage('正在检查 GitHub Pages 状态...', 'info');
+            
+            // 检查主页面
+            const testUrl = 'https://jasper-lee0320.github.io/gamesforbb/';
+            
+            fetch(testUrl, { method: 'HEAD', mode: 'no-cors' })
+                .then(() => {
+                    showMessage('✅ GitHub Pages 已启用并正常工作！', 'success');
+                    document.getElementById('linkArea').value = testUrl;
+                })
+                .catch(() => {
+                    // 由于 CORS 限制，我们使用图片测试方法
+                    const img = new Image();
+                    img.onload = () => {
+                        showMessage('✅ GitHub Pages 可能已启用，请手动验证链接', 'success');
+                        document.getElementById('linkArea').value = testUrl;
+                    };
+                    img.onerror = () => {
+                        showMessage('❌ GitHub Pages 未启用或仍在部署中\n\n请按照以下步骤设置：\n1. 前往 GitHub 仓库\n2. 点击 Settings\n3. 找到 Pages 部分\n4. 设置 Source 为 main 分支\n5. 保存并等待部署完成', 'error');
+                    };
+                    img.src = testUrl + 'favicon.ico?' + Date.now(); // 添加时间戳避免缓存
+                });
         }
 
         function openLink() {

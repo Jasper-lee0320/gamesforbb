@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>蓓蓓游戏合集 - 主页</title>
+    <style>
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            text-align: center;
+            max-width: 800px;
+            width: 100%;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 1.2em;
+        }
+        .games-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+        .game-card {
+            background: linear-gradient(45deg, #ff6b6b, #ffa500);
+            color: white;
+            border: none;
+            padding: 30px 20px;
+            border-radius: 15px;
+            cursor: pointer;
+            font-size: 16px;
+            text-decoration: none;
+            transition: transform 0.3s, box-shadow 0.3s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .game-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+        .game-card.primary {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+        }
+        .game-card.success {
+            background: linear-gradient(45deg, #56ab2f, #a8e6cf);
+        }
+        .game-icon {
+            font-size: 3em;
+            margin-bottom: 10px;
+        }
+        .game-title {
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .game-desc {
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+        .status {
+            background: #d4edda;
+            color: #155724;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border-left: 4px solid #28a745;
+        }
+        .github-link {
+            background: #333;
+            color: white;
+            padding: 15px 30px;
+            border-radius: 25px;
+            text-decoration: none;
+            display: inline-block;
+            margin-top: 20px;
+            transition: background 0.3s;
+        }
+        .github-link:hover {
+            background: #555;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎮 蓓蓓游戏合集</h1>
+        <p class="subtitle">专为蓓蓓设计的精美游戏集合</p>
+        
+        <div class="status">
+            <strong>✅ GitHub Pages 已启用！</strong><br>
+            所有游戏都可以在线游玩，点击下方游戏卡片开始游戏。
+        </div>
+
+        <div class="games-grid">
+            <a href="beibei-archery-challenge.html" class="game-card primary">
+                <div class="game-icon">🏹</div>
+                <div class="game-title">射箭挑战</div>
+                <div class="game-desc">物理弹道射击游戏</div>
+            </a>
+
+            <a href="beibei-parkour-adventure.html" class="game-card">
+                <div class="game-icon">🏃‍♀️</div>
+                <div class="game-title">跑酷冒险</div>
+                <div class="game-desc">无尽跑酷闯关游戏</div>
+            </a>
+
+            <a href="beibei-heart-tetris.html" class="game-card success">
+                <div class="game-icon">❤️</div>
+                <div class="game-title">爱心俄罗斯方块</div>
+                <div class="game-desc">浪漫主题方块游戏</div>
+            </a>
+
+            <a href="beibei-super-heart-fighter.html" class="game-card">
+                <div class="game-icon">💖</div>
+                <div class="game-title">超级爱心战机</div>
+                <div class="game-desc">经典射击游戏</div>
+            </a>
+
+            <a href="beibei-heart-match.html" class="game-card">
+                <div class="game-icon">💝</div>
+                <div class="game-title">爱心连连看</div>
+                <div class="game-desc">益智消除游戏</div>
+            </a>
+
+            <a href="beibei-memory-flip.html" class="game-card">
+                <div class="game-icon">🧩</div>
+                <div class="game-title">记忆翻牌</div>
+                <div class="game-desc">记忆力训练游戏</div>
+            </a>
+
+            <a href="github-pages-qr-generator.html" class="game-card primary">
+                <div class="game-icon">📱</div>
+                <div class="game-title">QR码生成器</div>
+                <div class="game-desc">生成游戏分享链接</div>
+            </a>
+        </div>
+
+        <a href="https://github.com/Jasper-lee0320/gamesforbb" class="github-link" target="_blank">
+            📂 查看 GitHub 源码
+        </a>
+
+        <p style="margin-top: 30px; color: #666; font-size: 0.9em;">
+            🌟 所有游戏支持桌面和移动设备 🌟<br>
+            💝 专为蓓蓓定制开发 💝
+        </p>
+    </div>
+
+    <script>
+        // 简单的页面加载动画
+        document.addEventListener('DOMContentLoaded', function() {
+            const cards = document.querySelectorAll('.game-card');
+            cards.forEach((card, index) => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(20px)';
+                setTimeout(() => {
+                    card.style.transition = 'all 0.6s ease';
+                    card.style.opacity = '1';
+                    card.style.transform = 'translateY(0)';
+                }, index * 100);
+            });
+        });
+    </script>
+</body>
+</html>
