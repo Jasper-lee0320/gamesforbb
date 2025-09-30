@@ -47,6 +47,22 @@
         .game-btn:hover {
             transform: translateY(-3px);
         }
+        
+        /* ✨ 新增的选中状态样式 ✨ */
+        .game-btn.selected {
+            transform: scale(1.05) !important; /* 让选中的按钮明显变大 */
+            border: 4px solid #ff0066 !important; /* 用醒目的粉色边框 */
+            box-shadow: 0 0 25px rgba(255, 0, 102, 0.8) !important; /* 添加强烈的粉色光晕效果 */
+            background: linear-gradient(45deg, #ff6b6b, #ff4757) !important; /* 用醒目的红色背景 */
+            z-index: 10;
+            position: relative;
+        }
+
+        /* 优化：当一个选中的按钮被鼠标悬停时，保持它的状态 */
+        .game-btn.selected:hover {
+            transform: scale(1.05) translateY(-3px) !important; /* 结合放大和上移效果 */
+        }
+        
         .game-btn.primary {
             background: linear-gradient(45deg, #4CAF50, #45a049);
             font-size: 18px;
@@ -163,31 +179,31 @@
         </div>
 
         <div class="games">
-            <button class="game-btn primary" onclick="makeQR('super-heart')">
+            <button class="game-btn primary" onclick="makeQR('super-heart', this)">
                 🌟 蓓蓓的超级爱心战机 v4.0 🌟
                 <br><small>粒子特效 + 成就系统 + 截图分享</small>
             </button>
-            <button class="game-btn primary" onclick="makeQR('heart-match')">
+            <button class="game-btn primary" onclick="makeQR('heart-match', this)">
                 💝 蓓蓓的爱心连连看 💝
                 <br><small>连线消除 + 3难度模式 + 智能提示</small>
             </button>
-            <button class="game-btn primary" onclick="makeQR('memory-flip')">
+            <button class="game-btn primary" onclick="makeQR('memory-flip', this)">
                 🧩 蓓蓓的记忆翻牌 🧩
                 <br><small>记忆训练 + 可爱图案 + 音效反馈</small>
             </button>
-            <button class="game-btn primary" onclick="makeQR('archery')">
+            <button class="game-btn primary" onclick="makeQR('archery', this)">
                 🎯 蓓蓓的射箭挑战 🎯
                 <br><small>物理射箭 + 风力影响 + 轨迹计算</small>
             </button>
-            <button class="game-btn primary" onclick="makeQR('parkour')">
+            <button class="game-btn primary" onclick="makeQR('parkour', this)">
                 🏃‍♀️ 蓓蓓的跑酷冒险 🏃‍♀️
                 <br><small>横版跑酷 + 障碍躲避 + 道具收集</small>
             </button>
-            <button class="game-btn primary" onclick="makeQR('tetris')">
+            <button class="game-btn primary" onclick="makeQR('tetris', this)">
                 💖 蓓蓓的爱心方块 💖
                 <br><small>爱心俄罗斯方块 + 7种方块 + 消除特效</small>
             </button>
-            <button class="game-btn primary" onclick="makeQR('pink-heart')">
+            <button class="game-btn primary" onclick="makeQR('pink-heart', this)">
                 💖 蓓蓓的爱心战机 v3.0 💖
                 <br><small>爱心敌机 + 粉色飞机 + 自动射击</small>
             </button>
@@ -213,7 +229,26 @@
     <script>
         let gameLink = '';
 
-        function makeQR(type) {
+        function makeQR(type, clickedButton) { // 接收新参数 clickedButton
+            // ✨ --- 新增的选中逻辑 --- ✨
+            console.log('makeQR called with type:', type, 'clickedButton:', clickedButton);
+            
+            // 获取所有的游戏按钮
+            const allGameButtons = document.querySelectorAll('.games .game-btn');
+            console.log('Found', allGameButtons.length, 'buttons');
+            
+            // 移除所有按钮的 'selected' 类
+            allGameButtons.forEach(btn => {
+                btn.classList.remove('selected');
+            });
+            
+            // 只给当前点击的按钮添加 'selected' 类
+            if (clickedButton) {
+                clickedButton.classList.add('selected');
+                console.log('Added selected class to button:', clickedButton.innerText.split('\n')[0]);
+            }
+            // ✨ --- 选中逻辑结束 --- ✨
+
             let url = '';
             let title = '';
 
@@ -346,7 +381,12 @@
 
         // 页面加载时显示说明
         window.onload = () => {
-            setTimeout(() => makeQR('super-heart'), 500);
+            setTimeout(() => {
+                // 找到第一个按钮
+                const firstButton = document.querySelector('.games .game-btn');
+                // 调用 makeQR 并把第一个按钮元素传进去
+                makeQR('super-heart', firstButton);
+            }, 500);
         };
     </script>
 </body>
