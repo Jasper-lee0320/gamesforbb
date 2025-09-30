@@ -1,0 +1,1122 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>蓓蓓的超级爱心战机</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(180deg, #001122 0%, #003366 100%);
+            font-family: Arial, sans-serif;
+            overflow: hidden;
+            touch-action: none;
+        }
+
+        #gameCanvas {
+            display: block;
+            margin: 0 auto;
+            background: linear-gradient(180deg, #001a33 0%, #004080 100%);
+            border: 2px solid #ff69b4;
+            box-shadow: 0 0 20px #ff69b4;
+        }
+
+        #gameInfo {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            color: #ff69b4;
+            font-size: 16px;
+            z-index: 100;
+        }
+
+        #playerInfo {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            color: #ff69b4;
+            font-size: 14px;
+            z-index: 100;
+            text-align: right;
+        }
+
+        #skillPanel {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            z-index: 100;
+        }
+
+        .skill-btn {
+            background: #ff69b4;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            margin: 2px;
+            border-radius: 15px;
+            cursor: pointer;
+            font-size: 12px;
+            min-width: 80px;
+        }
+
+        .skill-btn:disabled {
+            background: #666;
+            opacity: 0.5;
+        }
+
+        .skill-btn.cooling {
+            background: #ff1493;
+        }
+
+        #achievementPanel {
+            position: absolute;
+            top: 120px;
+            left: 10px;
+            z-index: 100;
+            max-width: 200px;
+        }
+
+        .achievement {
+            background: rgba(255, 105, 180, 0.2);
+            border: 1px solid #ff69b4;
+            color: #ff69b4;
+            padding: 5px;
+            margin: 2px 0;
+            border-radius: 5px;
+            font-size: 10px;
+            display: none;
+        }
+
+        .achievement.unlocked {
+            display: block;
+            background: rgba(255, 215, 0, 0.3);
+            border-color: #ffd700;
+            color: #ffd700;
+        }
+
+        #gameOver {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.95);
+            color: #ff69b4;
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            display: none;
+            z-index: 200;
+            border: 2px solid #ff69b4;
+            max-width: 400px;
+        }
+
+        button {
+            background: #ff69b4;
+            color: #ffffff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            margin: 5px;
+        }
+
+        button:hover {
+            background: #ff1493;
+        }
+
+        #startScreen {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.9);
+            color: #ff69b4;
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            z-index: 300;
+            border: 2px solid #ff69b4;
+        }
+
+        input {
+            padding: 8px;
+            margin: 10px;
+            border-radius: 5px;
+            border: 1px solid #ff69b4;
+            background: #001122;
+            color: #ff69b4;
+            font-size: 16px;
+        }
+
+        .player-name {
+            color: #ffb6c1;
+            font-weight: bold;
+        }
+
+        .version-info {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            color: #666;
+            font-size: 10px;
+        }
+
+        #audioControls {
+            position: absolute;
+            top: 50px;
+            right: 10px;
+            z-index: 100;
+        }
+
+        #musicToggle {
+            background: #ff69b4;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        #shareCanvas {
+            position: absolute;
+            top: -1000px;
+            left: -1000px;
+        }
+
+        .combo-display {
+            position: absolute;
+            top: 80px;
+            right: 10px;
+            color: #ffd700;
+            font-size: 14px;
+            font-weight: bold;
+            z-index: 100;
+        }
+    </style>
+</head>
+<body>
+    <div id="startScreen">
+        <h2>💖 蓓蓓的超级爱心战机 💖</h2>
+        <p>输入你的飞行员代号：</p>
+        <input type="text" id="playerName" placeholder="蓓蓓" maxlength="15">
+        <br>
+        <button onclick="startGame()">开始战斗！</button>
+        <br><br>
+        <small style="color: #ffb6c1;">
+            电脑：方向键移动，空格键清屏爆炸<br>
+            手机：触摸拖动移动，双击清屏爆炸<br>
+            💗 治愈爱心：回复生命值<br>
+            💥 分裂爱心：击中后分裂成小爱心<br>
+            ⚡ 清屏爆炸：消除所有敌机（有冷却时间）
+        </small>
+    </div>
+
+    <div class="version-info">v4.0 - 超级豪华版</div>
+
+    <div id="audioControls">
+        <button id="musicToggle" onclick="toggleMusic()">🎵 音乐</button>
+    </div>
+
+    <div id="gameInfo">
+        <div>分数: <span id="score">0</span></div>
+        <div>生命: <span id="lives">3</span></div>
+        <div>等级: <span id="level">1</span></div>
+        <div>生存: <span id="survivalTime">0</span>s</div>
+    </div>
+
+    <div id="playerInfo">
+        <div>飞行员: <span class="player-name" id="displayName">蓓蓓</span></div>
+        <div>击毁: <span id="enemiesKilled">0</span>颗爱心</div>
+        <div>连击: <span id="comboCount">0</span></div>
+    </div>
+
+    <div class="combo-display" id="comboDisplay"></div>
+
+    <div id="skillPanel">
+        <button class="skill-btn" id="clearScreenBtn" onclick="useClearScreen()">
+            💥 清屏爆炸 <span id="clearScreenCooldown"></span>
+        </button>
+    </div>
+
+    <div id="achievementPanel">
+        <div class="achievement" id="achievement1">🏆 爱心收割者<br>击毁100颗爱心</div>
+        <div class="achievement" id="achievement2">🏆 完美躲避<br>10秒内不被击中</div>
+        <div class="achievement" id="achievement3">🏆 连击大师<br>连续击中20个敌机</div>
+        <div class="achievement" id="achievement4">🏆 生存专家<br>单局生存5分钟</div>
+    </div>
+
+    <div id="gameOver">
+        <h2>🎯 战斗结束！</h2>
+        <p>飞行员 <span class="player-name" id="finalPlayerName">蓓蓓</span> 的战绩：</p>
+        <div id="finalStats"></div>
+        <div id="achievementSummary"></div>
+        <button onclick="restartGame()">再来一局</button>
+        <button onclick="backToStart()">更换飞行员</button>
+        <button onclick="shareScreenshot()">📸 分享战绩</button>
+    </div>
+
+    <canvas id="gameCanvas" width="400" height="600"></canvas>
+    <canvas id="shareCanvas" width="400" height="600"></canvas>
+
+    <!-- 音频元素 -->
+    <audio id="bgMusic" loop>
+        <source src="data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmEaSCOTwuvVeDIGHo3Q6d6ILwgZZLvty5NFEBJJn+jmqmMXDkKm2/DAeigEKrLJ2s1uGAkdZr3mwrk3BxyLxtDYfS0FJ4PH9Nx5LwgZZ7fs4YNDBxhLoOHnuGIbAkEy1sHLAz=" type="audio/wav">
+    </audio>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const shareCanvas = document.getElementById('shareCanvas');
+        const shareCtx = shareCanvas.getContext('2d');
+        const bgMusic = document.getElementById('bgMusic');
+
+        // 游戏状态
+        let gameRunning = false;
+        let gameStarted = false;
+        let score = 0;
+        let lives = 3;
+        let level = 1;
+        let enemiesKilled = 0;
+        let playerName = "蓓蓓";
+        let musicPlaying = false;
+        let autoShootTimer = 0;
+        let survivalStartTime = 0;
+        let survivalTime = 0;
+        let comboCount = 0;
+        let lastHitTime = 0;
+        let dodgeStartTime = 0;
+        let maxCombo = 0;
+
+        // 技能系统
+        let clearScreenCooldown = 0;
+        const CLEAR_SCREEN_COOLDOWN = 300; // 5秒冷却（60fps * 5）
+
+        // 成就系统
+        let achievements = {
+            heartHarvester: false,
+            perfectDodge: false,
+            comboMaster: false,
+            survivalExpert: false
+        };
+
+        // 玩家飞机
+        const player = {
+            x: canvas.width / 2 - 15,
+            y: canvas.height - 60,
+            width: 30,
+            height: 40,
+            speed: 5
+        };
+
+        // 游戏对象数组
+        let bullets = [];
+        let enemies = [];
+        let explosions = [];
+        let powerUps = [];
+        let particles = [];
+
+        let frameCount = 0;
+
+        // 音效生成器（简单的Web Audio API实现）
+        let audioContext;
+        
+        function initAudio() {
+            try {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            } catch (e) {
+                console.log('Web Audio API不支持');
+            }
+        }
+
+        function playShootSound() {
+            if (!audioContext) return;
+            
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
+            oscillator.frequency.exponentialRampToValueAtTime(400, audioContext.currentTime + 0.1);
+            
+            gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
+            
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + 0.1);
+        }
+
+        function playExplosionSound() {
+            if (!audioContext) return;
+            
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.type = 'sawtooth';
+            oscillator.frequency.setValueAtTime(200, audioContext.currentTime);
+            oscillator.frequency.exponentialRampToValueAtTime(50, audioContext.currentTime + 0.3);
+            
+            gainNode.gain.setValueAtTime(0.2, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+            
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + 0.3);
+        }
+
+        // 粒子系统
+        function createParticles(x, y, count, color) {
+            for (let i = 0; i < count; i++) {
+                particles.push({
+                    x: x,
+                    y: y,
+                    vx: (Math.random() - 0.5) * 10,
+                    vy: (Math.random() - 0.5) * 10,
+                    life: 1,
+                    decay: 0.02 + Math.random() * 0.02,
+                    size: 2 + Math.random() * 3,
+                    color: color || '#ff69b4'
+                });
+            }
+        }
+
+        function updateParticles() {
+            particles = particles.filter(particle => {
+                particle.x += particle.vx;
+                particle.y += particle.vy;
+                particle.life -= particle.decay;
+                particle.vx *= 0.98;
+                particle.vy *= 0.98;
+                return particle.life > 0;
+            });
+        }
+
+        function drawParticles() {
+            particles.forEach(particle => {
+                ctx.save();
+                ctx.globalAlpha = particle.life;
+                ctx.fillStyle = particle.color;
+                ctx.beginPath();
+                ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+            });
+        }
+
+        // 音乐控制
+        function toggleMusic() {
+            const button = document.getElementById('musicToggle');
+            if (musicPlaying) {
+                bgMusic.pause();
+                button.textContent = '🎵 音乐';
+                musicPlaying = false;
+            } else {
+                bgMusic.play().catch(e => console.log('音乐播放失败:', e));
+                button.textContent = '🔇 静音';
+                musicPlaying = true;
+            }
+        }
+
+        // 开始游戏
+        function startGame() {
+            const nameInput = document.getElementById('playerName').value.trim();
+            playerName = nameInput || "蓓蓓";
+            
+            document.getElementById('displayName').textContent = playerName;
+            document.getElementById('startScreen').style.display = 'none';
+            
+            gameStarted = true;
+            gameRunning = true;
+            survivalStartTime = Date.now();
+            resetGameStats();
+            initAudio();
+            
+            if (!musicPlaying) {
+                toggleMusic();
+            }
+            
+            gameLoop();
+        }
+
+        // 重置游戏数据
+        function resetGameStats() {
+            score = 0;
+            lives = 3;
+            level = 1;
+            enemiesKilled = 0;
+            comboCount = 0;
+            maxCombo = 0;
+            bullets = [];
+            enemies = [];
+            explosions = [];
+            powerUps = [];
+            particles = [];
+            frameCount = 0;
+            autoShootTimer = 0;
+            clearScreenCooldown = 0;
+            survivalTime = 0;
+            lastHitTime = 0;
+            dodgeStartTime = Date.now();
+            player.x = canvas.width / 2 - 15;
+            player.y = canvas.height - 60;
+            
+            // 重置成就
+            achievements = {
+                heartHarvester: false,
+                perfectDodge: false,
+                comboMaster: false,
+                survivalExpert: false
+            };
+            
+            updateUI();
+        }
+
+        // 更新UI显示
+        function updateUI() {
+            document.getElementById('score').textContent = score;
+            document.getElementById('lives').textContent = lives;
+            document.getElementById('level').textContent = level;
+            document.getElementById('enemiesKilled').textContent = enemiesKilled;
+            document.getElementById('comboCount').textContent = comboCount;
+            document.getElementById('survivalTime').textContent = survivalTime;
+            
+            // 更新技能冷却显示
+            const clearBtn = document.getElementById('clearScreenBtn');
+            const cooldownSpan = document.getElementById('clearScreenCooldown');
+            if (clearScreenCooldown > 0) {
+                clearBtn.disabled = true;
+                clearBtn.className = 'skill-btn cooling';
+                cooldownSpan.textContent = `(${Math.ceil(clearScreenCooldown / 60)})`;
+            } else {
+                clearBtn.disabled = false;
+                clearBtn.className = 'skill-btn';
+                cooldownSpan.textContent = '';
+            }
+        }
+
+        // 检查成就
+        function checkAchievements() {
+            // 爱心收割者
+            if (!achievements.heartHarvester && enemiesKilled >= 100) {
+                achievements.heartHarvester = true;
+                document.getElementById('achievement1').classList.add('unlocked');
+                score += 1000;
+            }
+            
+            // 完美躲避
+            if (!achievements.perfectDodge && (Date.now() - dodgeStartTime) >= 10000) {
+                achievements.perfectDodge = true;
+                document.getElementById('achievement2').classList.add('unlocked');
+                score += 500;
+            }
+            
+            // 连击大师
+            if (!achievements.comboMaster && comboCount >= 20) {
+                achievements.comboMaster = true;
+                document.getElementById('achievement3').classList.add('unlocked');
+                score += 2000;
+            }
+            
+            // 生存专家
+            if (!achievements.survivalExpert && survivalTime >= 300) {
+                achievements.survivalExpert = true;
+                document.getElementById('achievement4').classList.add('unlocked');
+                score += 5000;
+            }
+        }
+
+        // 绘制爱心形状
+        function drawHeart(x, y, size, color) {
+            ctx.fillStyle = color;
+            ctx.beginPath();
+            
+            const heartSize = size / 20;
+            ctx.save();
+            ctx.translate(x + size/2, y + size/2);
+            ctx.scale(heartSize, heartSize);
+            
+            ctx.moveTo(0, 0);
+            ctx.bezierCurveTo(-10, -15, -25, -5, -12, 5);
+            ctx.bezierCurveTo(-12, 5, 0, 15, 0, 15);
+            ctx.bezierCurveTo(0, 15, 12, 5, 12, 5);
+            ctx.bezierCurveTo(25, -5, 10, -15, 0, 0);
+            
+            ctx.closePath();
+            ctx.fill();
+            ctx.restore();
+        }
+
+        // 绘制玩家飞机
+        function drawPlayer() {
+            ctx.fillStyle = '#ff69b4';
+            ctx.fillRect(player.x, player.y, player.width, player.height);
+            
+            ctx.fillStyle = '#ffb6c1';
+            ctx.fillRect(player.x + 12, player.y - 5, 6, 15);
+            ctx.fillRect(player.x + 5, player.y + 25, 5, 10);
+            ctx.fillRect(player.x + 20, player.y + 25, 5, 10);
+            
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(player.x + 13, player.y + 10, 4, 8);
+            
+            ctx.fillStyle = '#ffb6c1';
+            ctx.font = '12px Arial';
+            ctx.textAlign = 'center';
+            const shortName = playerName.length > 8 ? playerName.substring(0, 8) + '...' : playerName;
+            ctx.fillText(shortName, player.x + player.width/2, player.y + player.height + 15);
+        }
+
+        // 绘制子弹
+        function drawBullets() {
+            bullets.forEach(bullet => {
+                if (bullet.type === 'power') {
+                    ctx.fillStyle = '#ff1493';
+                    ctx.fillRect(bullet.x - 1, bullet.y, bullet.width + 2, bullet.height);
+                } else {
+                    ctx.fillStyle = '#ff69b4';
+                }
+                ctx.fillRect(bullet.x, bullet.y, bullet.width, bullet.height);
+            });
+        }
+
+        // 绘制敌机
+        function drawEnemies() {
+            enemies.forEach(enemy => {
+                let heartColor;
+                if (enemy.type === 'heal') {
+                    heartColor = '#90EE90'; // 淡绿色治愈爱心
+                } else if (enemy.type === 'split') {
+                    heartColor = '#FFD700'; // 金色分裂爱心
+                } else if (enemy.type === 'boss') {
+                    heartColor = '#DC143C';
+                } else if (enemy.type === 'fast') {
+                    heartColor = '#FF6347';
+                } else {
+                    heartColor = '#FF69B4';
+                }
+                
+                drawHeart(enemy.x, enemy.y, enemy.width, heartColor);
+            });
+        }
+
+        // 绘制道具
+        function drawPowerUps() {
+            powerUps.forEach(powerUp => {
+                drawHeart(powerUp.x, powerUp.y, powerUp.width, '#FFC0CB');
+                
+                ctx.fillStyle = '#ffffff';
+                ctx.font = '12px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText(powerUp.symbol, powerUp.x + powerUp.width/2, powerUp.y + powerUp.height/2 + 4);
+            });
+        }
+
+        // 绘制爆炸效果
+        function drawExplosions() {
+            explosions.forEach(explosion => {
+                ctx.fillStyle = `rgba(255, 105, 180, ${explosion.life})`;
+                ctx.fillRect(explosion.x - explosion.size/2, explosion.y - explosion.size/2, explosion.size, explosion.size);
+            });
+        }
+
+        // 更新游戏对象
+        function updateBullets() {
+            bullets = bullets.filter(bullet => {
+                bullet.y -= bullet.speed;
+                return bullet.y > -bullet.height;
+            });
+        }
+
+        function updateEnemies() {
+            enemies = enemies.filter(enemy => {
+                enemy.y += enemy.speed;
+                return enemy.y < canvas.height;
+            });
+        }
+
+        function updatePowerUps() {
+            powerUps = powerUps.filter(powerUp => {
+                powerUp.y += powerUp.speed;
+                return powerUp.y < canvas.height;
+            });
+        }
+
+        function updateExplosions() {
+            explosions = explosions.filter(explosion => {
+                explosion.life -= 0.02;
+                explosion.size += 0.5;
+                return explosion.life > 0;
+            });
+        }
+
+        // 生成敌机
+        function spawnEnemy() {
+            const spawnRate = Math.max(60, 120 - level * 10);
+            
+            if (frameCount % spawnRate === 0) {
+                let enemyType = 'normal';
+                let width = 25, height = 25, speed = 2 + Math.random() * 2;
+                
+                // 根据等级和随机数生成不同类型
+                const rand = Math.random();
+                if (level >= 2 && rand < 0.1) {
+                    enemyType = 'heal'; // 10% 治愈爱心
+                } else if (level >= 3 && rand < 0.15) {
+                    enemyType = 'split'; // 5% 分裂爱心
+                } else if (level >= 4 && rand < 0.25) {
+                    enemyType = 'fast';
+                    width = 20;
+                    height = 20;
+                    speed = 4 + Math.random() * 2;
+                } else if (level >= 6 && rand < 0.35) {
+                    enemyType = 'boss';
+                    width = 35;
+                    height = 35;
+                    speed = 1 + Math.random();
+                }
+                
+                enemies.push({
+                    x: Math.random() * (canvas.width - width),
+                    y: -height,
+                    width: width,
+                    height: height,
+                    speed: speed,
+                    type: enemyType,
+                    hp: enemyType === 'boss' ? 3 : 1
+                });
+            }
+            
+            // 生成道具
+            if (frameCount % 600 === 0 && Math.random() < 0.3) {
+                powerUps.push({
+                    x: Math.random() * (canvas.width - 20),
+                    y: -20,
+                    width: 20,
+                    height: 20,
+                    speed: 3,
+                    type: 'health',
+                    symbol: '+'
+                });
+            }
+        }
+
+        // 自动射击
+        function autoShoot() {
+            autoShootTimer++;
+            if (autoShootTimer >= 15) {
+                shoot();
+                autoShootTimer = 0;
+            }
+        }
+
+        // 射击
+        function shoot() {
+            bullets.push({
+                x: player.x + player.width/2 - 2,
+                y: player.y,
+                width: 4,
+                height: 10,
+                speed: 8,
+                type: 'normal'
+            });
+            
+            playShootSound();
+        }
+
+        // 清屏爆炸技能
+        function useClearScreen() {
+            if (clearScreenCooldown > 0) return;
+            
+            // 清除所有敌机并给分
+            enemies.forEach(enemy => {
+                createParticles(enemy.x + enemy.width/2, enemy.y + enemy.height/2, 8, '#FFD700');
+                score += 5;
+                enemiesKilled++;
+            });
+            
+            enemies = [];
+            clearScreenCooldown = CLEAR_SCREEN_COOLDOWN;
+            
+            // 创建全屏爆炸效果
+            for (let i = 0; i < 50; i++) {
+                createParticles(Math.random() * canvas.width, Math.random() * canvas.height, 1, '#FF69B4');
+            }
+            
+            playExplosionSound();
+            updateUI();
+        }
+
+        // 碰撞检测
+        function checkCollisions() {
+            // 子弹击中敌机
+            bullets.forEach((bullet, bulletIndex) => {
+                enemies.forEach((enemy, enemyIndex) => {
+                    if (bullet.x < enemy.x + enemy.width &&
+                        bullet.x + bullet.width > enemy.x &&
+                        bullet.y < enemy.y + enemy.height &&
+                        bullet.y + bullet.height > enemy.y) {
+                        
+                        enemy.hp -= (bullet.type === 'power' ? 2 : 1);
+                        bullets.splice(bulletIndex, 1);
+                        
+                        if (enemy.hp <= 0) {
+                            // 处理不同类型的敌机
+                            if (enemy.type === 'heal') {
+                                lives = Math.min(5, lives + 1);
+                                createParticles(enemy.x + enemy.width/2, enemy.y + enemy.height/2, 10, '#90EE90');
+                            } else if (enemy.type === 'split') {
+                                // 分裂成3个小爱心
+                                for (let i = 0; i < 3; i++) {
+                                    enemies.push({
+                                        x: enemy.x + (i - 1) * 15,
+                                        y: enemy.y,
+                                        width: 15,
+                                        height: 15,
+                                        speed: 3 + Math.random() * 2,
+                                        type: 'normal',
+                                        hp: 1
+                                    });
+                                }
+                                createParticles(enemy.x + enemy.width/2, enemy.y + enemy.height/2, 15, '#FFD700');
+                            } else {
+                                createParticles(enemy.x + enemy.width/2, enemy.y + enemy.height/2, 8, '#FF69B4');
+                            }
+                            
+                            explosions.push({
+                                x: enemy.x + enemy.width/2,
+                                y: enemy.y + enemy.height/2,
+                                size: enemy.type === 'boss' ? 20 : 10,
+                                life: 1
+                            });
+                            
+                            enemies.splice(enemyIndex, 1);
+                            enemiesKilled++;
+                            comboCount++;
+                            maxCombo = Math.max(maxCombo, comboCount);
+                            lastHitTime = Date.now();
+                            
+                            const points = enemy.type === 'boss' ? 50 : 
+                                         enemy.type === 'split' ? 30 :
+                                         enemy.type === 'heal' ? 40 :
+                                         enemy.type === 'fast' ? 20 : 10;
+                            score += points + Math.floor(comboCount / 5) * 5; // 连击奖励
+                            
+                            if (enemiesKilled > 0 && enemiesKilled % 10 === 0) {
+                                level++;
+                            }
+                            
+                            playExplosionSound();
+                            updateUI();
+                        }
+                    }
+                });
+            });
+
+            // 连击重置检查
+            if (Date.now() - lastHitTime > 3000) {
+                comboCount = 0;
+            }
+
+            // 玩家收集道具
+            powerUps.forEach((powerUp, powerUpIndex) => {
+                if (powerUp.x < player.x + player.width &&
+                    powerUp.x + powerUp.width > player.x &&
+                    powerUp.y < player.y + player.height &&
+                    powerUp.y + powerUp.height > player.y) {
+                    
+                    if (powerUp.type === 'health' && lives < 5) {
+                        lives++;
+                        createParticles(powerUp.x + powerUp.width/2, powerUp.y + powerUp.height/2, 8, '#90EE90');
+                        updateUI();
+                    }
+                    
+                    powerUps.splice(powerUpIndex, 1);
+                }
+            });
+
+            // 敌机撞击玩家
+            enemies.forEach((enemy, enemyIndex) => {
+                if (enemy.x < player.x + player.width &&
+                    enemy.x + enemy.width > player.x &&
+                    enemy.y < player.y + player.height &&
+                    enemy.y + enemy.height > player.y) {
+                    
+                    createParticles(player.x + player.width/2, player.y + player.height/2, 15, '#FF1493');
+                    
+                    explosions.push({
+                        x: player.x + player.width/2,
+                        y: player.y + player.height/2,
+                        size: 15,
+                        life: 1
+                    });
+                    
+                    enemies.splice(enemyIndex, 1);
+                    lives--;
+                    comboCount = 0; // 重置连击
+                    dodgeStartTime = Date.now(); // 重置完美躲避计时
+                    updateUI();
+                    
+                    if (lives <= 0) {
+                        gameOver();
+                    }
+                }
+            });
+        }
+
+        // 游戏结束
+        function gameOver() {
+            gameRunning = false;
+            bgMusic.pause();
+            
+            document.getElementById('finalPlayerName').textContent = playerName;
+            
+            // 生成详细战绩
+            const finalStats = `
+                <p>最终分数: <span style="color: #ffd700;">${score}</span></p>
+                <p>击毁爱心: <span style="color: #ff69b4;">${enemiesKilled}</span>颗</p>
+                <p>达到等级: <span style="color: #00ffff;">${level}</span></p>
+                <p>最大连击: <span style="color: #ff6347;">${maxCombo}</span></p>
+                <p>生存时间: <span style="color: #90ee90;">${survivalTime}</span>秒</p>
+            `;
+            document.getElementById('finalStats').innerHTML = finalStats;
+            
+            // 显示获得的成就
+            const unlockedAchievements = [];
+            if (achievements.heartHarvester) unlockedAchievements.push('🏆 爱心收割者');
+            if (achievements.perfectDodge) unlockedAchievements.push('🏆 完美躲避');
+            if (achievements.comboMaster) unlockedAchievements.push('🏆 连击大师');
+            if (achievements.survivalExpert) unlockedAchievements.push('🏆 生存专家');
+            
+            if (unlockedAchievements.length > 0) {
+                document.getElementById('achievementSummary').innerHTML = 
+                    '<h3 style="color: #ffd700;">本局获得成就:</h3>' + 
+                    unlockedAchievements.map(a => `<p>${a}</p>`).join('');
+            } else {
+                document.getElementById('achievementSummary').innerHTML = '';
+            }
+            
+            document.getElementById('gameOver').style.display = 'block';
+        }
+
+        // 生成分享截图
+        function shareScreenshot() {
+            shareCtx.fillStyle = '#001122';
+            shareCtx.fillRect(0, 0, shareCanvas.width, shareCanvas.height);
+            
+            shareCtx.fillStyle = '#ff69b4';
+            shareCtx.font = 'bold 24px Arial';
+            shareCtx.textAlign = 'center';
+            shareCtx.fillText('💖 蓓蓓的超级爱心战机 💖', shareCanvas.width/2, 50);
+            
+            shareCtx.font = '16px Arial';
+            shareCtx.fillStyle = '#ffb6c1';
+            shareCtx.fillText(`飞行员: ${playerName}`, shareCanvas.width/2, 100);
+            
+            shareCtx.font = '20px Arial';
+            shareCtx.fillStyle = '#ffd700';
+            shareCtx.fillText(`最终分数: ${score}`, shareCanvas.width/2, 150);
+            
+            shareCtx.fillStyle = '#ff69b4';
+            shareCtx.fillText(`击毁爱心: ${enemiesKilled}颗`, shareCanvas.width/2, 180);
+            shareCtx.fillText(`最大连击: ${maxCombo}`, shareCanvas.width/2, 210);
+            shareCtx.fillText(`生存时间: ${survivalTime}秒`, shareCanvas.width/2, 240);
+            shareCtx.fillText(`达到等级: ${level}`, shareCanvas.width/2, 270);
+            
+            // 绘制成就
+            let achievementY = 320;
+            shareCtx.font = '16px Arial';
+            shareCtx.fillStyle = '#ffd700';
+            shareCtx.fillText('🏆 获得成就:', shareCanvas.width/2, achievementY);
+            
+            achievementY += 30;
+            if (achievements.heartHarvester) {
+                shareCtx.fillText('爱心收割者', shareCanvas.width/2, achievementY);
+                achievementY += 25;
+            }
+            if (achievements.perfectDodge) {
+                shareCtx.fillText('完美躲避', shareCanvas.width/2, achievementY);
+                achievementY += 25;
+            }
+            if (achievements.comboMaster) {
+                shareCtx.fillText('连击大师', shareCanvas.width/2, achievementY);
+                achievementY += 25;
+            }
+            if (achievements.survivalExpert) {
+                shareCtx.fillText('生存专家', shareCanvas.width/2, achievementY);
+                achievementY += 25;
+            }
+            
+            // 转换为图片并下载
+            const link = document.createElement('a');
+            link.download = `蓓蓓爱心战机_${playerName}_${score}分.png`;
+            link.href = shareCanvas.toDataURL();
+            link.click();
+        }
+
+        // 重新开始游戏
+        function restartGame() {
+            document.getElementById('gameOver').style.display = 'none';
+            gameRunning = true;
+            survivalStartTime = Date.now();
+            resetGameStats();
+            if (musicPlaying) {
+                bgMusic.play().catch(e => console.log('音乐播放失败:', e));
+            }
+            gameLoop();
+        }
+
+        // 返回开始界面
+        function backToStart() {
+            document.getElementById('gameOver').style.display = 'none';
+            document.getElementById('startScreen').style.display = 'block';
+            gameStarted = false;
+            gameRunning = false;
+            bgMusic.pause();
+        }
+
+        // 键盘控制
+        const keys = {};
+        
+        document.addEventListener('keydown', (e) => {
+            keys[e.key] = true;
+            
+            if (e.key === ' ' && gameRunning) {
+                e.preventDefault();
+                useClearScreen();
+            }
+        });
+        
+        document.addEventListener('keyup', (e) => {
+            keys[e.key] = false;
+        });
+
+        // 触摸控制
+        let touchStartX = 0;
+        let touchStartY = 0;
+        let isTouching = false;
+        let doubleTapTimer = 0;
+        let lastTapTime = 0;
+
+        canvas.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            if (!gameRunning) return;
+            
+            const now = Date.now();
+            if (now - lastTapTime < 300) {
+                // 双击清屏
+                useClearScreen();
+            }
+            lastTapTime = now;
+            
+            const rect = canvas.getBoundingClientRect();
+            touchStartX = e.touches[0].clientX - rect.left;
+            touchStartY = e.touches[0].clientY - rect.top;
+            isTouching = true;
+        });
+
+        canvas.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+            if (!gameRunning || !isTouching) return;
+            
+            const rect = canvas.getBoundingClientRect();
+            const touchX = e.touches[0].clientX - rect.left;
+            const touchY = e.touches[0].clientY - rect.top;
+            
+            player.x = Math.max(0, Math.min(canvas.width - player.width, touchX - player.width/2));
+            player.y = Math.max(0, Math.min(canvas.height - player.height, touchY - player.height/2));
+        });
+
+        canvas.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            isTouching = false;
+        });
+
+        // 处理玩家移动
+        function handlePlayerMovement() {
+            if (keys['ArrowLeft'] && player.x > 0) {
+                player.x -= player.speed;
+            }
+            if (keys['ArrowRight'] && player.x < canvas.width - player.width) {
+                player.x += player.speed;
+            }
+            if (keys['ArrowUp'] && player.y > 0) {
+                player.y -= player.speed;
+            }
+            if (keys['ArrowDown'] && player.y < canvas.height - player.height) {
+                player.y += player.speed;
+            }
+        }
+
+        // 主游戏循环
+        function gameLoop() {
+            if (!gameRunning) return;
+            
+            // 更新生存时间
+            survivalTime = Math.floor((Date.now() - survivalStartTime) / 1000);
+            
+            // 更新技能冷却
+            if (clearScreenCooldown > 0) {
+                clearScreenCooldown--;
+            }
+            
+            // 清除画布
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // 处理玩家移动
+            handlePlayerMovement();
+            
+            // 自动射击
+            autoShoot();
+            
+            // 更新游戏对象
+            updateBullets();
+            updateEnemies();
+            updatePowerUps();
+            updateExplosions();
+            updateParticles();
+            
+            // 生成敌机
+            spawnEnemy();
+            
+            // 碰撞检测
+            checkCollisions();
+            
+            // 检查成就
+            checkAchievements();
+            
+            // 绘制所有对象
+            drawPlayer();
+            drawBullets();
+            drawEnemies();
+            drawPowerUps();
+            drawExplosions();
+            drawParticles();
+            
+            // 更新UI
+            updateUI();
+            
+            frameCount++;
+            
+            // 继续循环
+            requestAnimationFrame(gameLoop);
+        }
+
+        // 防止页面滚动
+        document.addEventListener('keydown', (e) => {
+            if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', ' '].includes(e.key)) {
+                e.preventDefault();
+            }
+        });
+    </script>
+</body>
+</html>
