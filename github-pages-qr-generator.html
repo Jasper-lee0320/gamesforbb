@@ -143,8 +143,12 @@
         </div>
 
         <div class="games">
-            <button class="game-btn primary" onclick="makeQR('pink-heart')">
-                💖 蓓蓓的粉色爱心战机 (最新版)
+            <button class="game-btn primary" onclick="makeQR('super-heart')">
+                🌟 蓓蓓的超级爱心战机 v4.0 🌟
+                <br><small>粒子特效 + 成就系统 + 截图分享</small>
+            </button>
+            <button class="game-btn" onclick="makeQR('pink-heart')">
+                💖 蓓蓓的粉色爱心战机 (v3.0)
                 <br><small>爱心敌机 + 粉色飞机 + 自动射击</small>
             </button>
             <button class="game-btn" onclick="makeQR('beibei-fighter')">
@@ -198,10 +202,14 @@
             let url = '';
             let title = '';
 
-            if (type === 'pink-heart') {
+            if (type === 'super-heart') {
+                // 蓓蓓超级爱心战机 v4.0
+                url = 'https://jasper-lee0320.github.io/gamesforbb/beibei-super-heart-fighter.html';
+                title = '🌟 蓓蓓的超级爱心战机 v4.0 🌟';
+            } else if (type === 'pink-heart') {
                 // 蓓蓓粉色爱心战机
                 url = 'https://jasper-lee0320.github.io/gamesforbb/beibei-pink-heart-fighter.html';
-                title = '💖 蓓蓓的粉色爱心战机 (最新版)';
+                title = '💖 蓓蓓的粉色爱心战机 (v3.0)';
             } else if (type === 'beibei-fighter') {
                 // 蓓蓓专属太空战机
                 url = 'https://jasper-lee0320.github.io/gamesforbb/beibei-space-fighter.html';
@@ -298,7 +306,7 @@
 
         // 页面加载时显示说明
         window.onload = () => {
-            setTimeout(() => makeQR('pink-heart'), 500);
+            setTimeout(() => makeQR('super-heart'), 500);
         };
     </script>
 </body>
