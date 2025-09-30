@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jasper的二维码游戏生成器</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Arial', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            max-width: 500px;
+            width: 100%;
+            margin: 20px 0;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 2em;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 1.1em;
+        }
+
+        .input-group {
+            margin: 20px 0;
+        }
+
+        label {
+            display: block;
+            color: #333;
+            font-weight: bold;
+            margin-bottom: 8px;
+            text-align: left;
+        }
+
+        input, textarea, select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        textarea {
+            height: 120px;
+            resize: vertical;
+            font-family: monospace;
+        }
+
+        .button {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+            margin: 10px;
+            min-width: 120px;
+        }
+
+        .button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .qr-container {
+            margin: 30px 0;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 15px;
+            border: 2px dashed #667eea;
+        }
+
+        #qrcode {
+            display: flex;
+            justify-content: center;
+            margin: 20px 0;
+            min-height: 200px;
+            align-items: center;
+        }
+
+        .game-templates {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .template-card {
+            background: linear-gradient(45deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: transform 0.3s;
+            text-align: center;
+        }
+
+        .template-card:hover {
+            transform: scale(1.05);
+        }
+
+        .template-card.active {
+            background: linear-gradient(45deg, #4facfe 0%, #00f2fe 100%);
+            transform: scale(1.02);
+        }
+
+        .template-card h3 {
+            margin-bottom: 10px;
+        }
+
+        .template-card p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .status {
+            margin: 15px 0;
+            padding: 10px;
+            border-radius: 10px;
+            display: none;
+        }
+
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .user-info {
+            background: linear-gradient(45deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 15px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+        }
+
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .feature {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .feature-icon {
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+
+        .qr-placeholder {
+            width: 200px;
+            height: 200px;
+            background: #f0f0f0;
+            border: 2px dashed #ccc;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #666;
+            border-radius: 10px;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="user-info">
+            <h1>🎮 Jasper-lee0320 的专属二维码生成器</h1>
+            <p class="subtitle">把任何网页游戏变成二维码，扫码即玩！</p>
+            <p>📅 当前时间: 2025-09-30 02:31:34 UTC</p>
+        </div>
+
+        <div class="features">
+            <div class="feature">
+                <div class="feature-icon">📱</div>
+                <h4>扫码即玩</h4>
+                <p>生成二维码直接扫描</p>
+            </div>
+            <div class="feature">
+                <div class="feature-icon">🎯</div>
+                <h4>个性定制</h4>
+                <p>支持自定义游戏内容</p>
+            </div>
+            <div class="feature">
+                <div class="feature-icon">🚀</div>
+                <h4>即时生成</h4>
+                <p>实时生成分享链接</p>
+            </div>
+        </div>
+
+        <div class="input-group">
+            <label for="gameSelect">🎮 选择游戏模板:</label>
+            <select id="gameSelect" onchange="loadTemplate()">
+                <option value="">-- 选择游戏模板 --</option>
+                <option value="plane">🚀 Jasper的飞机大战</option>
+                <option value="snake">🐍 Jasper的贪吃蛇</option>
+                <option value="puzzle">🧩 Jasper的拼图游戏</option>
+                <option value="memory">🧠 Jasper的记忆游戏</option>
+                <option value="custom">✨ 自定义游戏</option>
+            </select>
+        </div>
+
+        <div class="input-group">
+            <label for="gameTitle">🎮 游戏标题:</label>
+            <input type="text" id="gameTitle" placeholder="输入游戏名称" value="Jasper的专属飞机大战">
+        </div>
+
+        <div class="input-group" id="customGameGroup" style="display: none;">
+            <label for="gameContent">📝 自定义游戏代码:</label>
+            <textarea id="gameContent" placeholder="粘贴HTML游戏代码..."></textarea>
+        </div>
+
+        <button class="button" onclick="generateGame()" id="generateBtn">🎯 生成游戏二维码</button>
+        <button class="button" onclick="copyToClipboard()" id="copyBtn" disabled>📋 复制链接</button>
+
+        <div class="status" id="status"></div>
+
+        <div class="qr-container">
+            <h3>📱 扫描二维码直接玩游戏</h3>
+            <div id="qrcode">
+                <div class="qr-placeholder">
+                    点击"生成游戏二维码"<br>生成你的专属游戏
+                </div>
+            </div>
+            <p id="qrInfo" style="color: #666; margin-top: 15px;">
+                生成二维码后，用微信扫码即可直接游戏！
+            </p>
+        </div>
+
+        <div class="input-group">
+            <label for="generatedLink">🔗 生成的游戏链接:</label>
+            <textarea id="generatedLink" readonly placeholder="生成的链接将显示在这里..."></textarea>
+        </div>
+    </div>
+
+    <script>
+        let currentGameURL = '';
+        let selectedTemplate = '';
+
+        // 游戏模板数据
+        const gameTemplates = {
+            plane: {
+                title: "Jasper的专属飞机大战",
+                content: `<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Jasper飞机大战</title><style>*{margin:0;padding:0;box-sizing:border-box}body{background:#001122;font-family:Arial;overflow:hidden;touch-action:none}#canvas{display:block;margin:0 auto;background:linear-gradient(180deg,#001a33,#004080);border:2px solid #00ffff}#info{position:absolute;top:10px;left:10px;color:#00ffff;font-size:16px}#over{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,0.9);color:#00ffff;padding:30px;border-radius:10px;text-align:center;display:none}button{background:#00ffff;color:#001122;border:none;padding:10px 20px;border-radius:5px;cursor:pointer;margin:10px}</style></head><body><div id="info">分数: <span id="score">0</span> | 生命: <span id="lives">3</span><br>飞行员: Jasper-lee0320</div><div id="over"><h2>🎯 战斗结束!</h2><p>飞行员 Jasper 的最终分数: <span id="final">0</span></p><button onclick="restart()">重新开始</button></div><canvas id="canvas" width="350" height="500"></canvas><script>const canvas=document.getElementById('canvas'),ctx=canvas.getContext('2d');let running=1,score=0,lives=3,frame=0;const player={x:canvas.width/2-15,y:canvas.height-60,w:30,h:40,speed:5};let bullets=[],enemies=[],explosions=[];function draw(){ctx.clearRect(0,0,canvas.width,canvas.height);ctx.fillStyle='#00ffff';ctx.fillRect(player.x,player.y,player.w,player.h);ctx.fillStyle='#ffffff';ctx.fillRect(player.x+12,player.y-5,6,15);ctx.fillStyle='#ffff00';bullets.forEach(b=>ctx.fillRect(b.x,b.y,4,10));ctx.fillStyle='#ff4444';enemies.forEach(e=>ctx.fillRect(e.x,e.y,e.w,e.h));explosions.forEach(ex=>{ctx.fillStyle=\`rgba(255,\${Math.floor(ex.life*255)},0,\${ex.life})\`;ctx.fillRect(ex.x-ex.size/2,ex.y-ex.size/2,ex.size,ex.size)});ctx.fillStyle='#ffff00';ctx.font='10px Arial';ctx.textAlign='center';ctx.fillText('Jasper',player.x+15,player.y+55)}function update(){bullets=bullets.filter(b=>(b.y-=7,b.y>-10));enemies=enemies.filter(e=>(e.y+=e.speed,e.y<canvas.height));explosions=explosions.filter(ex=>(ex.life-=0.03,ex.size+=0.5,ex.life>0));frame%90===0&&enemies.push({x:Math.random()*(canvas.width-20),y:-30,w:20,h:30,speed:2+Math.random()*2});bullets.forEach((b,bi)=>{enemies.forEach((e,ei)=>{b.x<e.x+e.w&&b.x+4>e.x&&b.y<e.y+e.h&&b.y+10>e.y&&(explosions.push({x:e.x+10,y:e.y+15,size:10,life:1}),bullets.splice(bi,1),enemies.splice(ei,1),score+=10,document.getElementById('score').textContent=score)})});enemies.forEach((e,ei)=>{e.x<player.x+player.w&&e.x+e.w>player.x&&e.y<player.y+player.h&&e.y+e.h>player.y&&(explosions.push({x:player.x+15,y:player.y+20,size:20,life:1}),enemies.splice(ei,1),lives--,document.getElementById('lives').textContent=lives,lives<=0&&(running=0,document.getElementById('final').textContent=score,document.getElementById('over').style.display='block'))})}function gameLoop(){running&&(handleMovement(),update(),draw(),frame++,requestAnimationFrame(gameLoop))}function restart(){running=1,score=0,lives=3,bullets=[],enemies=[],explosions=[],frame=0,player.x=canvas.width/2-15,player.y=canvas.height-60,document.getElementById('score').textContent=0,document.getElementById('lives').textContent=3,document.getElementById('over').style.display='none',gameLoop()}const keys={};document.addEventListener('keydown',e=>{keys[e.code]=!0,'Space'===e.code&&(e.preventDefault(),bullets.push({x:player.x+13,y:player.y}))});document.addEventListener('keyup',e=>keys[e.code]=!1);let touchX=0,touchY=0;canvas.addEventListener('touchstart',e=>{e.preventDefault();const t=e.touches[0];touchX=t.clientX,touchY=t.clientY});canvas.addEventListener('touchmove',e=>{e.preventDefault();const t=e.touches[0],dx=t.clientX-touchX,dy=t.clientY-touchY;player.x+=0.5*dx,player.y+=0.5*dy,player.x=Math.max(0,Math.min(canvas.width-player.w,player.x)),player.y=Math.max(0,Math.min(canvas.height-player.h,player.y)),touchX=t.clientX,touchY=t.clientY});canvas.addEventListener('touchend',e=>{e.preventDefault(),bullets.push({x:player.x+13,y:player.y})});function handleMovement(){(keys.ArrowLeft||keys.KeyA)&&(player.x-=player.speed);(keys.ArrowRight||keys.KeyD)&&(player.x+=player.speed);(keys.ArrowUp||keys.KeyW)&&(player.y-=player.speed);(keys.ArrowDown||keys.KeyS)&&(player.y+=player.speed);player.x=Math.max(0,Math.min(canvas.width-player.w,player.x)),player.y=Math.max(0,Math.min(canvas.height-player.h,player.y))}gameLoop()<\/script></body></html>`
+            },
+            snake: {
+                title: "Jasper的贪吃蛇游戏",
+                content: `<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><title>Jasper贪吃蛇</title><style>body{background:#000;display:flex;flex-direction:column;justify-content:center;align-items:center;height:100vh;margin:0;font-family:Arial}canvas{border:2px solid #fff}#info{color:#fff;font-size:18px;margin-bottom:10px;text-align:center}#controls{color:#fff;font-size:14px;margin-top:10px;text-align:center}</style></head><body><div id="info">🐍 Jasper-lee0320 的贪吃蛇游戏<br>分数: <span id="score">0</span></div><canvas id="game" width="400" height="400"></canvas><div id="controls">电脑: 方向键控制 | 手机: 触摸滑动控制</div><script>const canvas=document.getElementById('game'),ctx=canvas.getContext('2d'),box=20;let snake=[{x:9*box,y:10*box}],direction,food={x:Math.floor(Math.random()*19+1)*box,y:Math.floor(Math.random()*19+1)*box},score=0;document.addEventListener('keydown',e=>{let key=e.keyCode;key==37&&direction!='RIGHT'&&(direction='LEFT');key==38&&direction!='DOWN'&&(direction='UP');key==39&&direction!='LEFT'&&(direction='RIGHT');key==40&&direction!='UP'&&(direction='DOWN')});let touchStartX,touchStartY;canvas.addEventListener('touchstart',e=>{e.preventDefault();touchStartX=e.touches[0].clientX;touchStartY=e.touches[0].clientY});canvas.addEventListener('touchend',e=>{e.preventDefault();let touchEndX=e.changedTouches[0].clientX,touchEndY=e.changedTouches[0].clientY,dx=touchEndX-touchStartX,dy=touchEndY-touchStartY;Math.abs(dx)>Math.abs(dy)?dx>0&&direction!='LEFT'?direction='RIGHT':dx<0&&direction!='RIGHT'&&(direction='LEFT'):dy>0&&direction!='UP'?direction='DOWN':dy<0&&direction!='DOWN'&&(direction='UP')});function collision(head,array){for(let i=0;i<array.length;i++)if(head.x==array[i].x&&head.y==array[i].y)return!0;return!1}function draw(){ctx.fillStyle='#000';ctx.fillRect(0,0,canvas.width,canvas.height);for(let i=0;i<snake.length;i++){ctx.fillStyle=i==0?'#0f0':'#fff';ctx.fillRect(snake[i].x,snake[i].y,box,box);ctx.strokeStyle='#000';ctx.strokeRect(snake[i].x,snake[i].y,box,box)}ctx.fillStyle='red';ctx.fillRect(food.x,food.y,box,box);let snakeX=snake[0].x,snakeY=snake[0].y;direction=='LEFT'&&(snakeX-=box);direction=='UP'&&(snakeY-=box);direction=='RIGHT'&&(snakeX+=box);direction=='DOWN'&&(snakeY+=box);if(snakeX==food.x&&snakeY==food.y){score++;document.getElementById('score').textContent=score;food={x:Math.floor(Math.random()*19+1)*box,y:Math.floor(Math.random()*19+1)*box}}else snake.pop();if(snakeX<0||snakeY<0||snakeX>=canvas.width||snakeY>=canvas.height||collision({x:snakeX,y:snakeY},snake)){alert('🎯 游戏结束! Jasper的最终分数: '+score+' 🏆');location.reload();return}let newHead={x:snakeX,y:snakeY};snake.unshift(newHead)}let game=setInterval(draw,100)<\/script></body></html>`
+            },
+            puzzle: {
+                title: "Jasper的拼图挑战",
+                content: `<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><title>Jasper拼图</title><style>body{background:linear-gradient(45deg,#667eea,#764ba2);display:flex;flex-direction:column;align-items:center;padding:20px;font-family:Arial;min-height:100vh}#game{background:#fff;padding:20px;border-radius:15px;box-shadow:0 10px 20px rgba(0,0,0,0.2)}#puzzle{display:grid;grid-template-columns:repeat(3,80px);grid-gap:3px;margin:20px 0}.tile{width:80px;height:80px;background:#667eea;color:#fff;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:bold;cursor:pointer;border-radius:8px;transition:all 0.3s}.tile:hover{background:#764ba2;transform:scale(1.05)}.empty{background:transparent;cursor:default}.empty:hover{transform:none}#info{color:#fff;text-align:center;margin-bottom:20px}button{background:#fff;color:#667eea;border:none;padding:10px 20px;border-radius:20px;cursor:pointer;font-size:14px;margin:5px}</style></head><body><div id="info"><h1>🧩 Jasper-lee0320 的拼图游戏</h1><p>点击数字移动到空位，按顺序排列1-8</p><div>步数: <span id="moves">0</span> | 目标: 用最少步数完成!</div></div><div id="game"><div id="puzzle"></div><button onclick="shuffle()">重新开始</button><button onclick="solve()">显示答案</button></div><script>let tiles=[1,2,3,4,5,6,7,8,0],moves=0;function createPuzzle(){const puzzle=document.getElementById('puzzle');puzzle.innerHTML='';tiles.forEach((tile,index)=>{const div=document.createElement('div');div.className=tile===0?'tile empty':'tile';div.textContent=tile===0?'':tile;div.onclick=()=>moveTile(index);puzzle.appendChild(div)})}function moveTile(index){const emptyIndex=tiles.indexOf(0),row=Math.floor(index/3),col=index%3,emptyRow=Math.floor(emptyIndex/3),emptyCol=emptyIndex%3;if((Math.abs(row-emptyRow)===1&&col===emptyCol)||(Math.abs(col-emptyCol)===1&&row===emptyRow)){[tiles[index],tiles[emptyIndex]]=[tiles[emptyIndex],tiles[index]];moves++;document.getElementById('moves').textContent=moves;createPuzzle();checkWin()}}function checkWin(){const target=[1,2,3,4,5,6,7,8,0];if(JSON.stringify(tiles)===JSON.stringify(target)){setTimeout(()=>alert('🎉 恭喜Jasper完成拼图! 总步数: '+moves+' 🏆\\n'+(moves<=20?'太厉害了!':'继续努力!')),100)}}function shuffle(){for(let i=0;i<1000;i++){const validMoves=getValidMoves();const randomMove=validMoves[Math.floor(Math.random()*validMoves.length)];const emptyIndex=tiles.indexOf(0);[tiles[randomMove],tiles[emptyIndex]]=[tiles[emptyIndex],tiles[randomMove]]}moves=0;document.getElementById('moves').textContent=moves;createPuzzle()}function getValidMoves(){const emptyIndex=tiles.indexOf(0),row=Math.floor(emptyIndex/3),col=emptyIndex%3,validMoves=[];row>0&&validMoves.push(emptyIndex-3);row<2&&validMoves.push(emptyIndex+3);col>0&&validMoves.push(emptyIndex-1);col<2&&validMoves.push(emptyIndex+1);return validMoves}function solve(){tiles=[1,2,3,4,5,6,7,8,0];moves=0;document.getElementById('moves').textContent=moves;createPuzzle()}createPuzzle();shuffle()<\/script></body></html>`
+            },
+            memory: {
+                title: "Jasper的记忆游戏",
+                content: `<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><title>Jasper记忆游戏</title><style>body{background:linear-gradient(45deg,#ff6b6b,#4ecdc4);display:flex;flex-direction:column;align-items:center;padding:20px;font-family:Arial;min-height:100vh}#game{background:#fff;padding:20px;border-radius:15px;box-shadow:0 10px 20px rgba(0,0,0,0.2)}#board{display:grid;grid-template-columns:repeat(4,80px);grid-gap:10px;margin:20px 0}.card{width:80px;height:80px;background:#f0f0f0;border:2px solid #ddd;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:24px;cursor:pointer;transition:all 0.3s;user-select:none}.card:hover{transform:scale(1.05);background:#e0e0e0}.card.flipped{background:#4ecdc4;color:#fff;border-color:#45b7b8}.card.matched{background:#6c5ce7;color:#fff;border-color:#5f3dc4}#info{color:#fff;text-align:center;margin-bottom:20px}button{background:#fff;color:#ff6b6b;border:none;padding:10px 20px;border-radius:20px;cursor:pointer;margin:10px}</style></head><body><div id="info"><h1>🧠 Jasper-lee0320 的记忆游戏</h1><p>找出所有相同的卡片对!</p><div>步数: <span id="moves">0</span> | 配对: <span id="pairs">0</span>/8</div></div><div id="game"><div id="board"></div><button onclick="newGame()">新游戏</button></div><script>const symbols=['🚀','🎮','🎯','🏆','💎','🌟','🎨','🎪','🚀','🎮','🎯','🏆','💎','🌟','🎨','🎪'];let cards=[],flippedCards=[],moves=0,pairs=0,canFlip=!0;function shuffle(array){for(let i=array.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[array[i],array[j]]=[array[j],array[i]]}}function createBoard(){const board=document.getElementById('board');board.innerHTML='';shuffle(symbols);symbols.forEach((symbol,index)=>{const card=document.createElement('div');card.className='card';card.dataset.symbol=symbol;card.dataset.index=index;card.onclick=()=>flipCard(card);board.appendChild(card);cards.push(card)})}function flipCard(card){if(!canFlip||card.classList.contains('flipped')||card.classList.contains('matched'))return;card.classList.add('flipped');card.textContent=card.dataset.symbol;flippedCards.push(card);if(flippedCards.length===2){moves++;document.getElementById('moves').textContent=moves;canFlip=!1;setTimeout(checkMatch,1000)}}function checkMatch(){const[card1,card2]=flippedCards;if(card1.dataset.symbol===card2.dataset.symbol){card1.classList.add('matched');card2.classList.add('matched');pairs++;document.getElementById('pairs').textContent=pairs;if(pairs===8){setTimeout(()=>alert('🎉 恭喜Jasper完成游戏!\\n总步数: '+moves+'\\n'+(moves<=16?'记忆力超强! 🧠💪':'继续加油! 💪')),500)}}else{card1.classList.remove('flipped');card2.classList.remove('flipped');card1.textContent='';card2.textContent=''}flippedCards=[];canFlip=!0}function newGame(){cards=[];flippedCards=[];moves=0;pairs=0;canFlip=!0;document.getElementById('moves').textContent=0;document.getElementById('pairs').textContent=0;createBoard()}newGame()<\/script></body></html>`
+            }
+        };
+
+        function loadTemplate() {
+            const select = document.getElementById('gameSelect');
+            selectedTemplate = select.value;
+            const customGroup = document.getElementById('customGameGroup');
+            
+            if (selectedTemplate === 'custom') {
+                customGroup.style.display = 'block';
+                document.getElementById('gameTitle').value = 'Jasper的自定义游戏';
+            } else if (selectedTemplate && gameTemplates[selectedTemplate]) {
+                customGroup.style.display = 'none';
+                const template = gameTemplates[selectedTemplate];
+                document.getElementById('gameTitle').value = template.title;
+                showStatus('模板"' + template.title + '"加载成功！', 'success');
+            } else {
+                customGroup.style.display = 'none';
+                document.getElementById('gameTitle').value = '';
+            }
+        }
+
+        function generateGame() {
+            const title = document.getElementById('gameTitle').value || 'Jasper的游戏';
+            let content = '';
+            
+            if (selectedTemplate && selectedTemplate !== 'custom' && gameTemplates[selectedTemplate]) {
+                content = gameTemplates[selectedTemplate].content;
+            } else if (selectedTemplate === 'custom') {
+                content = document.getElementById('gameContent').value;
+            } else {
+                showStatus('请选择一个游戏模板！', 'error');
+                return;
+            }
+
+            if (!content.trim()) {
+                showStatus('游戏内容不能为空！', 'error');
+                return;
+            }
+
+            try {
+                // 生成Data URL
+                const encodedContent = encodeURIComponent(content);
+                currentGameURL = 'data:text/html;charset=utf-8,' + encodedContent;
+                
+                document.getElementById('generatedLink').value = currentGameURL;
+                document.getElementById('copyBtn').disabled = false;
+                
+                // 生成二维码 (使用简单的二维码生成方法)
+                generateQRCode(currentGameURL);
+                
+                showStatus('游戏生成成功！', 'success');
+                document.getElementById('qrInfo').innerHTML = 
+                    `<strong>✅ 二维码生成完成！</strong><br>
+                    📱 用微信扫描上方二维码即可开始游戏<br>
+                    🎮 游戏: ${title}<br>
+                    👤 专属玩家: Jasper-lee0320`;
+                    
+            } catch (error) {
+                showStatus('生成失败: ' + error.message, 'error');
+            }
+        }
+
+        function generateQRCode(url) {
+            const qrContainer = document.getElementById('qrcode');
+            
+            // 使用Google Charts API生成二维码（更稳定的方法）
+            const qrSize = 200;
+            const qrURL = `https://api.qrserver.com/v1/create-qr-code/?size=${qrSize}x${qrSize}&data=${encodeURIComponent(url)}`;
+            
+            qrContainer.innerHTML = `
+                <img src="${qrURL}" 
+                     alt="游戏二维码" 
+                     style="width: ${qrSize}px; height: ${qrSize}px; border-radius: 10px;"
+                     onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                <div style="display: none; width: ${qrSize}px; height: ${qrSize}px; background: #f0f0f0; border: 2px dashed #ccc; display: flex; align-items: center; justify-content: center; color: #666; border-radius: 10px;">
+                    二维码加载失败<br>请使用下方链接
+                </div>
+            `;
+        }
+
+        function copyToClipboard() {
+            const link = document.getElementById('generatedLink').value;
+            if (!link) {
+                showStatus('请先生成游戏！', 'error');
+                return;
+            }
+
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(link).then(() => {
+                    showStatus('链接已复制到剪贴板！', 'success');
+                }).catch(() => {
+                    fallbackCopyText(link);
+                });
+            } else {
+                fallbackCopyText(link);
+            }
+        }
+
+        function fallbackCopyText(text) {
+            const textarea = document.getElementById('generatedLink');
+            textarea.select();
+            textarea.setSelectionRange(0, 99999);
+            try {
+                document.execCommand('copy');
+                showStatus('链接已复制！', 'success');
+            } catch (err) {
+                showStatus('复制失败，请手动复制链接', 'error');
+            }
+        }
+
+        function showStatus(message, type) {
+            const status = document.getElementById('status');
+            status.textContent = message;
+            status.className = `status ${type}`;
+            status.style.display = 'block';
+            
+            setTimeout(() => {
+                status.style.display = 'none';
+            }, 3000);
+        }
+
+        // 页面加载时设置默认选项
+        window.onload = function() {
+            document.getElementById('gameSelect').value = 'plane';
+            loadTemplate();
+        };
+    </script>
+</body>
+</html>
