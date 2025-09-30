@@ -366,9 +366,14 @@
         </div>
         
         <div class="controls">
-            <div>🎮 控制方法:</div>
-            <div>空格键/点击 = 跳跃 | 下箭头/向下滑 = 滑铲</div>
-            <div>收集💎钻石，避开🚧障碍物！</div>
+            <div id="startControls">
+                <button class="restart-btn" onclick="startGame()" style="margin-bottom: 10px;">🎮 开始游戏</button>
+            </div>
+            <div id="gameControls" style="display: none;">
+                <div>🎮 控制方法:</div>
+                <div>空格键/点击 = 跳跃 | 下箭头/向下滑 = 滑铲</div>
+                <div>收集💎钻石，避开🚧障碍物！</div>
+            </div>
         </div>
         
         <div class="game-world">
@@ -449,6 +454,23 @@
             } catch (e) {
                 console.log('🔊 音效播放失败:', e);
             }
+        }
+        
+        // 开始游戏
+        function startGame() {
+            console.log('🎮 用户点击开始游戏');
+            
+            // 激活音频上下文
+            if (audioContext.state === 'suspended') {
+                audioContext.resume();
+            }
+            
+            // 隐藏开始按钮，显示游戏控制说明
+            document.getElementById('startControls').style.display = 'none';
+            document.getElementById('gameControls').style.display = 'block';
+            
+            // 开始游戏
+            initGame();
         }
         
         // 初始化游戏
@@ -872,7 +894,8 @@
         // 启动游戏
         document.addEventListener('DOMContentLoaded', () => {
             console.log('🎮 蓓蓓的跑酷冒险加载完成!');
-            initGame();
+            // 不自动开始游戏，等待用户点击开始按钮
+            updateUI();
         });
     </script>
 </body>

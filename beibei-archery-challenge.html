@@ -542,8 +542,9 @@
             <div class="trajectory-line" id="trajectoryLine"></div>
 
             <div class="controls">
-                <button class="control-btn" onclick="newGame()">🆕 新游戏</button>
-                <button class="control-btn" onclick="pauseGame()" id="pauseBtn">⏸️ 暂停</button>
+                <button class="control-btn" id="startGameBtn" onclick="startGame()" style="background: linear-gradient(45deg, #ff1493, #ff69b4);">🎮 开始游戏</button>
+                <button class="control-btn" onclick="newGame()" id="newGameBtn" style="display: none;">🆕 新游戏</button>
+                <button class="control-btn" onclick="pauseGame()" id="pauseBtn" style="display: none;">⏸️ 暂停</button>
                 <button class="control-btn" onclick="showHelp()">❓ 帮助</button>
             </div>
         </div>
@@ -649,6 +650,23 @@
                     oscillator.stop(audioContext.currentTime + 0.5);
                     break;
             }
+        }
+        
+        function startGame() {
+            console.log('🎮 用户点击开始射箭游戏');
+            
+            // 激活音频上下文
+            if (audioContext.state === 'suspended') {
+                audioContext.resume();
+            }
+            
+            // 隐藏开始按钮，显示游戏控制按钮
+            document.getElementById('startGameBtn').style.display = 'none';
+            document.getElementById('newGameBtn').style.display = 'inline-block';
+            document.getElementById('pauseBtn').style.display = 'inline-block';
+            
+            // 开始游戏
+            newGame();
         }
 
         function initGame() {
@@ -844,9 +862,9 @@
             const startX = bowRect.left + bowRect.width/2 - gameRect.left;
             const startY = bowRect.top + bowRect.height/2 - gameRect.top;
             
-            // 使用传入的瞄准点作为目标，而不是十字光标位置
-            const endX = aimX - gameRect.left;
-            const endY = aimY - gameRect.top;
+            // 使用传入的瞄准点作为目标，aimX和aimY已经是相对于gameArea的坐标
+            const endX = aimX;
+            const endY = aimY;
             
             arrow.style.left = startX + 'px';
             arrow.style.top = startY + 'px';
@@ -1191,16 +1209,24 @@
             requestAnimationFrame(gameLoop);
         }
 
-        // 初始化游戏
-        console.log('🚀 开始初始化射箭游戏...');
-        document.addEventListener('DOMContentLoaded', initGame);
+        // 初始化游戏页面
+        console.log('🚀 加载射箭游戏页面...');
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('🎯 蓓蓓的射箭挑战加载完成!');
+            // 不自动开始游戏，等待用户点击开始按钮
+            positionTarget();
+            updateWind();
+            updateUI();
+        });
         
         // 如果DOM已加载完成
         if (document.readyState === 'loading') {
             console.log('⏳ 等待DOM加载...');
         } else {
-            console.log('📱 DOM已就绪，立即初始化');
-            initGame();
+            console.log('📱 DOM已就绪，立即设置页面');
+            positionTarget();
+            updateWind();
+            updateUI();
         }
 
         console.log('✅ 蓓蓓的射箭挑战脚本加载完成!');
