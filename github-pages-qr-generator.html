@@ -145,6 +145,18 @@
                 🧩 蓓蓓的记忆翻牌 🧩
                 <br><small>记忆训练 + 可爱图案 + 音效反馈</small>
             </button>
+            <button class="game-btn primary" onclick="makeQR('archery')">
+                🎯 蓓蓓的射箭挑战 🎯
+                <br><small>物理射箭 + 风力影响 + 轨迹计算</small>
+            </button>
+            <button class="game-btn primary" onclick="makeQR('parkour')">
+                🏃‍♀️ 蓓蓓的跑酷冒险 🏃‍♀️
+                <br><small>横版跑酷 + 障碍躲避 + 道具收集</small>
+            </button>
+            <button class="game-btn primary" onclick="makeQR('tetris')">
+                💖 蓓蓓的爱心方块 💖
+                <br><small>爱心俄罗斯方块 + 7种方块 + 消除特效</small>
+            </button>
             <button class="game-btn primary" onclick="makeQR('pink-heart')">
                 💖 蓓蓓的爱心战机 v3.0 💖
                 <br><small>爱心敌机 + 粉色飞机 + 自动射击</small>
@@ -199,6 +211,18 @@
                 // 蓓蓓记忆翻牌 - 新增游戏
                 url = 'https://jasper-lee0320.github.io/gamesforbb/beibei-memory-flip.html';
                 title = '🧩 蓓蓓的记忆翻牌';
+            } else if (type === 'archery') {
+                // 蓓蓓射箭挑战
+                url = 'https://jasper-lee0320.github.io/gamesforbb/beibei-archery-challenge.html';
+                title = '🎯 蓓蓓的射箭挑战';
+            } else if (type === 'parkour') {
+                // 蓓蓓跑酷冒险
+                url = 'https://jasper-lee0320.github.io/gamesforbb/beibei-parkour-adventure.html';
+                title = '🏃‍♀️ 蓓蓓的跑酷冒险';
+            } else if (type === 'tetris') {
+                // 蓓蓓爱心方块
+                url = 'https://jasper-lee0320.github.io/gamesforbb/beibei-heart-tetris.html';
+                title = '💖 蓓蓓的爱心方块';
             } else if (type === 'pink-heart') {
                 // 蓓蓓粉色爱心战机 v3.0
                 url = 'https://jasper-lee0320.github.io/gamesforbb/beibei-pink-heart-fighter.html';
