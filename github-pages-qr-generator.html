@@ -124,12 +124,12 @@
 </head>
 <body>
     <div class="container">
-        <h1>🎮 Jasper的游戏中心</h1>
-        <p style="color: #666;">安全稳定的游戏二维码生成器</p>
+        <h1>💖 蓓蓓的游戏中心</h1>
+        <p style="color: #666;">专为蓓蓓打造的精品游戏合集</p>
         
         <div class="info warning">
             <strong>⚠️ 当前状态：</strong><br>
-            由于网络安全限制，需要启用GitHub Pages才能正常访问游戏。<br>
+            蓓蓓的游戏托管在GitHub Pages上，需要启用后才能正常访问。<br>
             请按照下方步骤操作：
         </div>
 
@@ -149,23 +149,11 @@
             </button>
             <button class="game-btn primary" onclick="makeQR('heart-match')">
                 💝 蓓蓓的爱心连连看 💝
-                <br><small>全新游戏！连线消除 + 3难度模式</small>
+                <br><small>连线消除 + 3难度模式 + 智能提示</small>
             </button>
-            <button class="game-btn" onclick="makeQR('pink-heart')">
-                💖 蓓蓓的粉色爱心战机 (v3.0)
+            <button class="game-btn primary" onclick="makeQR('pink-heart')">
+                💖 蓓蓓的爱心战机 v3.0 💖
                 <br><small>爱心敌机 + 粉色飞机 + 自动射击</small>
-            </button>
-            <button class="game-btn" onclick="makeQR('beibei-fighter')">
-                🚀 蓓蓓的太空战机 (v2.0)
-                <br><small>经典版本</small>
-            </button>
-            <button class="game-btn" onclick="makeQR('pages-plane')">
-                🚀 飞机大战 (原版)
-                <br><small>最初版本</small>
-            </button>
-            <button class="game-btn" onclick="makeQR('pages-snake')">
-                🐍 贪吃蛇游戏
-                <br><small>休闲游戏</small>
             </button>
             <button class="game-btn github" onclick="makeQR('github')">
                 📂 查看源代码仓库
@@ -175,7 +163,7 @@
 
         <div id="qrArea">
             <p>📱 选择游戏生成二维码</p>
-            <p style="color: #999; font-size: 12px;">启用GitHub Pages后，二维码链接将直接可用</p>
+            <p style="color: #999; font-size: 12px;">启用GitHub Pages后，即可畅玩蓓蓓的专属游戏</p>
         </div>
 
         <div>
@@ -211,24 +199,13 @@
                 url = 'https://jasper-lee0320.github.io/gamesforbb/beibei-super-heart-fighter.html';
                 title = '🌟 蓓蓓的超级爱心战机 v4.0 🌟';
             } else if (type === 'heart-match') {
-                // 蓓蓓爱心连连看 - 新增游戏
+                // 蓓蓓爱心连连看
                 url = 'https://jasper-lee0320.github.io/gamesforbb/beibei-heart-match.html';
                 title = '💝 蓓蓓的爱心连连看';
             } else if (type === 'pink-heart') {
-                // 蓓蓓粉色爱心战机
+                // 蓓蓓粉色爱心战机 v3.0
                 url = 'https://jasper-lee0320.github.io/gamesforbb/beibei-pink-heart-fighter.html';
-                title = '💖 蓓蓓的粉色爱心战机 (v3.0)';
-            } else if (type === 'beibei-fighter') {
-                // 蓓蓓专属太空战机
-                url = 'https://jasper-lee0320.github.io/gamesforbb/beibei-space-fighter.html';
-                title = '🚀 蓓蓓的太空战机 (v2.0)';
-            } else if (type === 'pages-plane') {
-                // GitHub Pages链接
-                url = 'https://jasper-lee0320.github.io/gamesforbb/customized-plane-game.html';
-                title = '🚀 飞机大战 (原版)';
-            } else if (type === 'pages-snake') {
-                url = 'https://jasper-lee0320.github.io/gamesforbb/snake-game.html';
-                title = '🐍 贪吃蛇游戏';
+                title = '💖 蓓蓓的爱心战机 v3.0';
             } else if (type === 'github') {
                 url = 'https://github.com/Jasper-lee0320/gamesforbb';
                 title = '📂 GitHub仓库';
