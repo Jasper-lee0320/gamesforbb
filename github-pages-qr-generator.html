@@ -162,33 +162,6 @@
             所有游戏均已部署在 GitHub Pages 上，可以直接游玩 🎮
         </div>
 
-        <div class="info-section">
-            <h3>📋 GitHub Pages 设置说明</h3>
-            <div class="steps">
-                <p><strong>1. 启用GitHub Pages：</strong></p>
-                <ul>
-                    <li>进入 GitHub 仓库 → Settings → Pages</li>
-                    <li>Source 选择 "Deploy from a branch"</li>
-                    <li>Branch 选择 "main" 分支</li>
-                    <li>点击 Save 保存设置</li>
-                </ul>
-                <p><strong>2. 访问链接：</strong></p>
-                <p>启用后约3-5分钟生效，访问地址：<br>
-                <code>https://jasper-lee0320.github.io/gamesforbb/</code></p>
-                <p><strong>3. 如果无法访问：</strong></p>
-                <ul>
-                    <li>检查仓库是否为 Public（公开）</li>
-                    <li>确认 GitHub Pages 已启用</li>
-                    <li>等待部署完成（首次可能需要10分钟）</li>
-                </ul>
-            </div>
-        </div>
-
-        <div class="games">
-            <button class="game-btn" onclick="generateQR('github')">📂 GitHub仓库链接</button>
-            <button class="game-btn" onclick="checkPages()">🔍 检查GitHub Pages状态</button>
-        </div>
-
         <div class="games">
             <button class="game-btn primary" onclick="makeQR('super-heart')">
                 🌟 蓓蓓的超级爱心战机 v4.0 🌟
@@ -218,15 +191,6 @@
                 💖 蓓蓓的爱心战机 v3.0 💖
                 <br><small>爱心敌机 + 粉色飞机 + 自动射击</small>
             </button>
-            <button class="game-btn github" onclick="makeQR('github')">
-                📂 查看源代码仓库
-                <br><small>GitHub仓库主页</small>
-            </button>
-        </div>
-
-        <div id="qrArea">
-            <p>📱 选择游戏生成二维码</p>
-            <p style="color: #999; font-size: 12px;">扫码即可畅玩蓓蓓的专属游戏</p>
         </div>
 
         <div>
@@ -235,18 +199,15 @@
 
         <div class="buttons">
             <button class="btn" onclick="copyLink()">📋 复制链接</button>
-            <button class="btn" onclick="openLink()">🔗 测试链接</button>
+            <button class="btn" onclick="openLink()">🎮 开始游戏</button>
+        </div>
+
+        <div id="qrArea">
+            <p>📱 选择游戏生成二维码</p>
+            <p style="color: #999; font-size: 12px;">扫码即可畅玩蓓蓓的专属游戏</p>
         </div>
 
         <div id="message" style="margin: 10px 0; display: none;"></div>
-
-        <div class="info">
-            <strong>💡 为什么选择GitHub Pages？</strong><br>
-            • ✅ 官方服务，安全可靠<br>
-            • ✅ 不会被网络安全软件拦截<br>
-            • ✅ 访问速度快，稳定性好<br>
-            • ✅ 支持自定义域名
-        </div>
     </div>
 
     <script>
@@ -284,9 +245,6 @@
                 // 蓓蓓粉色爱心战机 v3.0
                 url = 'https://jasper-lee0320.github.io/gamesforbb/beibei-pink-heart-fighter.html';
                 title = '💖 蓓蓓的爱心战机 v3.0';
-            } else if (type === 'github') {
-                url = 'https://github.com/Jasper-lee0320/gamesforbb';
-                title = '📂 GitHub仓库';
             }
 
             gameLink = url;
