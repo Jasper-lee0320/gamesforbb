@@ -6,12 +6,13 @@
 **GitHub 仓库**: `Jasper-lee0320/gamesforbb`  
 **部署平台**: GitHub Pages  
 **访问地址**: https://jasper-lee0320.github.io/gamesforbb/  
-**项目类型**: 单页面游戏合集 + QR码生成器
+**项目类型**: 单页面游戏合集 + QR码生成器  
+**本地路径**: `F:\Code_test\gamesforbb\`
 
 ## 🎯 项目结构
 
 ```
-F:\Code_test\
+F:\Code_test\gamesforbb\
 ├── beibei-archery-challenge.html      # 🎯 射箭挑战游戏
 ├── beibei-heart-match.html           # 💝 爱心连连看游戏 (主要优化对象)
 ├── beibei-heart-tetris.html          # 💖 爱心俄罗斯方块
@@ -70,6 +71,11 @@ const cellSize = Math.min(widthBased, heightBased, 60);
 
 ## 🛠️ 开发环境设置
 
+### 项目路径
+```
+F:\Code_test\gamesforbb\  # 新的项目根目录
+```
+
 ### Git 配置
 ```bash
 git remote -v
@@ -80,7 +86,7 @@ git remote -v
 ### 本地开发
 ```powershell
 # 进入项目目录
-cd F:\Code_test
+cd F:\Code_test\gamesforbb
 
 # 打开游戏中心主页
 Start-Process -FilePath "github-pages-qr-generator.html"
@@ -169,7 +175,7 @@ Start-Process -FilePath "文件名.html"
 ## 🎯 快速启动指南
 
 ### 新 Agent 上手步骤
-1. **环境检查**: 确认在 `F:\Code_test` 目录
+1. **环境检查**: 确认在 `F:\Code_test\gamesforbb` 目录
 2. **项目状态**: 检查 Git 状态 `git status`
 3. **打开主页**: `Start-Process github-pages-qr-generator.html`
 4. **查看游戏**: 点击按钮测试各个游戏功能
@@ -177,6 +183,9 @@ Start-Process -FilePath "文件名.html"
 
 ### 常用命令快捷方式
 ```powershell
+# 进入项目目录
+cd F:\Code_test\gamesforbb
+
 # 快速测试主页
 Start-Process github-pages-qr-generator.html
 
