@@ -1,0 +1,1236 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎯 蓓蓓的射箭挑战</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #ffb3e6 0%, #ff99d6 50%, #ff80cc 100%);
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            overflow: hidden;
+            touch-action: none;
+            user-select: none;
+        }
+
+        .game-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .game-header {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            z-index: 100;
+        }
+
+        .game-title {
+            color: #ff1493;
+            font-size: 1.8em;
+            font-weight: bold;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+        }
+
+        .game-stats {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .stat-item {
+            text-align: center;
+            min-width: 80px;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #ff1493;
+            font-weight: bold;
+        }
+
+        .stat-value {
+            font-size: 18px;
+            color: #dc143c;
+            font-weight: bold;
+            background: white;
+            padding: 5px 10px;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .game-area {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+            background: linear-gradient(180deg, #87ceeb 0%, #98fb98 100%);
+        }
+
+        .wind-indicator {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 10px 15px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            z-index: 50;
+        }
+
+        .wind-text {
+            color: #ff1493;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .wind-arrow {
+            font-size: 24px;
+            color: #00bfff;
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+
+        .archer {
+            position: absolute;
+            bottom: 50px;
+            left: 50px;
+            width: 60px;
+            height: 80px;
+            background: linear-gradient(145deg, #ff69b4, #ff1493);
+            border-radius: 30px 30px 10px 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: white;
+            transform-origin: center;
+            transition: transform 0.3s ease;
+            z-index: 20;
+        }
+
+        .bow {
+            position: absolute;
+            bottom: 65px;
+            left: 110px;
+            width: 40px;
+            height: 60px;
+            background: #8b4513;
+            border-radius: 20px;
+            transform-origin: center;
+            transition: transform 0.2s ease;
+            z-index: 15;
+        }
+
+        .arrow {
+            position: absolute;
+            width: 60px;
+            height: 6px;
+            background: linear-gradient(90deg, #cd853f, #daa520, #ff6347);
+            border-radius: 3px;
+            transform-origin: left center;
+            z-index: 30;
+            transition: all 0.1s ease;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        }
+
+        .arrow::before {
+            content: '▶';
+            position: absolute;
+            right: -12px;
+            top: -9px;
+            color: #ff1493;
+            font-size: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+
+        .arrow::after {
+            content: '';
+            position: absolute;
+            left: -8px;
+            top: 1px;
+            width: 0;
+            height: 0;
+            border-style: solid;
+            border-width: 2px 8px 2px 0;
+            border-color: transparent #8b4513 transparent transparent;
+        }
+
+        .target {
+            position: absolute;
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: crosshair;
+            transition: all 0.3s ease;
+            z-index: 5;
+        }
+
+        .target-rings {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            position: relative;
+            background: 
+                radial-gradient(circle, #ff1493 0% 15%, 
+                                      #ff69b4 15% 30%, 
+                                      #ffb6c1 30% 45%, 
+                                      #ffc0cb 45% 60%, 
+                                      #ffe4e1 60% 75%, 
+                                      #fff 75% 100%);
+            border: 3px solid #ff1493;
+        }
+
+        .target-center {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 30px;
+            height: 30px;
+            background: #ff1493;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        .target.moving {
+            animation: targetMove 3s linear infinite;
+        }
+
+        @keyframes targetMove {
+            0% { transform: translateY(0); }
+            25% { transform: translateY(-50px); }
+            50% { transform: translateY(-100px); }
+            75% { transform: translateY(-50px); }
+            100% { transform: translateY(0); }
+        }
+
+        .power-meter {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 300px;
+            height: 20px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+            border: 2px solid #ff1493;
+            overflow: hidden;
+            z-index: 30;
+        }
+
+        .power-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #00ff00, #ffff00, #ff6600, #ff0000);
+            border-radius: 8px;
+            transition: width 0.1s ease;
+        }
+
+        .power-text {
+            position: absolute;
+            top: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #ff1493;
+            font-weight: bold;
+            text-shadow: 1px 1px 2px rgba(255,255,255,0.8);
+        }
+
+        .crosshair {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            pointer-events: none;
+            z-index: 100;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+
+        .crosshair::before,
+        .crosshair::after {
+            content: '';
+            position: absolute;
+            background: #ff1493;
+            border-radius: 1px;
+        }
+
+        .crosshair::before {
+            width: 2px;
+            height: 30px;
+            left: 14px;
+            top: 0;
+        }
+
+        .crosshair::after {
+            width: 30px;
+            height: 2px;
+            left: 0;
+            top: 14px;
+        }
+
+        .score-popup {
+            position: absolute;
+            color: #ff1493;
+            font-weight: bold;
+            font-size: 24px;
+            text-shadow: 2px 2px 4px rgba(255,255,255,0.8);
+            pointer-events: none;
+            z-index: 200;
+            animation: scoreFloat 2s ease-out forwards;
+        }
+
+        @keyframes scoreFloat {
+            0% {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+            100% {
+                opacity: 0;
+                transform: translateY(-80px) scale(1.5);
+            }
+        }
+
+        .controls {
+            position: absolute;
+            bottom: 60px;
+            right: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            z-index: 50;
+        }
+
+        .control-btn {
+            background: linear-gradient(145deg, #ff69b4, #ff1493);
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 15px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 10px rgba(255, 20, 147, 0.3);
+        }
+
+        .control-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(255, 20, 147, 0.4);
+        }
+
+        .control-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .trajectory-line {
+            position: absolute;
+            height: 2px;
+            background: rgba(255, 20, 147, 0.6);
+            border-radius: 1px;
+            z-index: 5;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .particle {
+            position: absolute;
+            width: 6px;
+            height: 6px;
+            background: #ff69b4;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 25;
+            animation: particleFly 1s ease-out forwards;
+        }
+
+        @keyframes particleFly {
+            0% {
+                opacity: 1;
+                transform: translate(0, 0) scale(1);
+            }
+            100% {
+                opacity: 0;
+                transform: translate(var(--dx), var(--dy)) scale(0);
+            }
+        }
+
+        .achievement-popup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+            z-index: 1000;
+            text-align: center;
+            display: none;
+            animation: achievementShow 0.5s ease-out;
+        }
+
+        @keyframes achievementShow {
+            0% {
+                opacity: 0;
+                transform: translate(-50%, -50%) scale(0.8);
+            }
+            100% {
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(1);
+            }
+        }
+
+        .achievement-title {
+            color: #ff1493;
+            font-size: 2em;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        .achievement-desc {
+            color: #666;
+            font-size: 1.2em;
+            margin-bottom: 20px;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .game-header {
+                padding: 8px 15px;
+            }
+            
+            .game-title {
+                font-size: 1.4em;
+            }
+            
+            .game-stats {
+                gap: 10px;
+            }
+            
+            .stat-item {
+                min-width: 60px;
+            }
+            
+            .stat-value {
+                font-size: 14px;
+                padding: 3px 8px;
+            }
+            
+            .archer {
+                width: 50px;
+                height: 70px;
+                font-size: 20px;
+            }
+            
+            .bow {
+                width: 35px;
+                height: 50px;
+            }
+            
+            .target {
+                width: 80px;
+                height: 80px;
+            }
+            
+            .power-meter {
+                width: 250px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .game-title {
+                font-size: 1.2em;
+            }
+            
+            .archer {
+                width: 45px;
+                height: 60px;
+                font-size: 18px;
+                left: 30px;
+            }
+            
+            .bow {
+                left: 75px;
+                width: 30px;
+                height: 45px;
+            }
+            
+            .target {
+                width: 70px;
+                height: 70px;
+            }
+            
+            .power-meter {
+                width: 200px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <div class="game-header">
+            <a href="index.html" style="position:absolute;left:15px;top:15px;background:rgba(255,255,255,0.9);border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;text-decoration:none;font-size:20px;z-index:200;box-shadow:0 2px 8px rgba(0,0,0,0.15);">🏠</a>
+            <div class="game-title">🎯 蓓蓓的射箭挑战</div>
+            <div class="game-stats">
+                <div class="stat-item">
+                    <div class="stat-label">🏹 箭数</div>
+                    <div class="stat-value" id="arrowsDisplay">10</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">⭐ 分数</div>
+                    <div class="stat-value" id="scoreDisplay">0</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">🎯 命中</div>
+                    <div class="stat-value" id="hitsDisplay">0</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">📊 精度</div>
+                    <div class="stat-value" id="accuracyDisplay">0%</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">🏆 等级</div>
+                    <div class="stat-value" id="levelDisplay">1</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="game-area" id="gameArea">
+            <div class="wind-indicator">
+                <div class="wind-text">💨 风力</div>
+                <div class="wind-arrow" id="windArrow">→</div>
+            </div>
+
+            <div class="archer">🏹</div>
+            <div class="bow" id="bow"></div>
+            
+            <div class="target" id="target">
+                <div class="target-rings">
+                    <div class="target-center">💖</div>
+                </div>
+            </div>
+
+            <div class="power-meter">
+                <div class="power-text">🔥 力度</div>
+                <div class="power-fill" id="powerFill"></div>
+            </div>
+
+            <div class="crosshair" id="crosshair"></div>
+            <div class="trajectory-line" id="trajectoryLine"></div>
+
+            <div class="controls">
+                <button class="control-btn" id="startGameBtn" onclick="startGame()" style="background: linear-gradient(45deg, #ff1493, #ff69b4);">🎮 开始游戏</button>
+                <button class="control-btn" onclick="newGame()" id="newGameBtn" style="display: none;">🆕 新游戏</button>
+                <button class="control-btn" onclick="pauseGame()" id="pauseBtn" style="display: none;">⏸️ 暂停</button>
+                <button class="control-btn" onclick="showHelp()">❓ 帮助</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="achievement-popup" id="achievementPopup">
+        <div class="achievement-title" id="achievementTitle">🏆 成就解锁！</div>
+        <div class="achievement-desc" id="achievementDesc">恭喜达成新成就！</div>
+        <button class="control-btn" onclick="closeAchievement()">✅ 确定</button>
+    </div>
+
+    <script>
+        console.log('🎯 蓓蓓的射箭挑战游戏初始化开始...');
+
+        // 游戏状态
+        let gameState = {
+            arrows: 10,
+            score: 0,
+            hits: 0,
+            shots: 0,
+            level: 1,
+            isPaused: false,
+            isAiming: false,
+            power: 0,
+            powerDirection: 1,
+            windForce: 0,
+            windDirection: 1,
+            targetX: 0,
+            targetY: 0,
+            isMovingTarget: false
+        };
+
+        // 成就系统
+        const achievements = {
+            firstHit: { unlocked: false, title: '🎯 初次命中', desc: '射中第一个目标！' },
+            bullseye: { unlocked: false, title: '💖 红心高手', desc: '射中10次红心！' },
+            perfectShot: { unlocked: false, title: '🏹 神射手', desc: '连续5次命中！' },
+            windMaster: { unlocked: false, title: '💨 风之掌控者', desc: '在强风中命中目标！' },
+            levelUp: { unlocked: false, title: '📈 进阶射手', desc: '达到5级！' }
+        };
+
+        let streakCount = 0;
+        let bullseyeCount = 0;
+
+        // 音频上下文
+        let audioContext;
+
+        console.log('游戏状态初始化完成', gameState);
+
+        function initAudio() {
+            try {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                console.log('音频上下文初始化成功');
+            } catch (e) {
+                console.warn('音频不支持:', e);
+            }
+        }
+
+        function playSound(type) {
+            if (!audioContext) return;
+
+            console.log('播放音效:', type);
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+
+            switch (type) {
+                case 'shoot':
+                    oscillator.frequency.setValueAtTime(400, audioContext.currentTime);
+                    oscillator.frequency.exponentialRampToValueAtTime(200, audioContext.currentTime + 0.3);
+                    gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+                    oscillator.start(audioContext.currentTime);
+                    oscillator.stop(audioContext.currentTime + 0.3);
+                    break;
+                case 'hit':
+                    oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
+                    gainNode.gain.setValueAtTime(0.15, audioContext.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
+                    oscillator.start(audioContext.currentTime);
+                    oscillator.stop(audioContext.currentTime + 0.2);
+                    break;
+                case 'bullseye':
+                    [800, 1000, 1200].forEach((freq, i) => {
+                        const osc = audioContext.createOscillator();
+                        const gain = audioContext.createGain();
+                        osc.connect(gain);
+                        gain.connect(audioContext.destination);
+                        osc.frequency.setValueAtTime(freq, audioContext.currentTime + i * 0.1);
+                        gain.gain.setValueAtTime(0.1, audioContext.currentTime + i * 0.1);
+                        gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + i * 0.1 + 0.3);
+                        osc.start(audioContext.currentTime + i * 0.1);
+                        osc.stop(audioContext.currentTime + i * 0.1 + 0.3);
+                    });
+                    break;
+                case 'miss':
+                    oscillator.frequency.setValueAtTime(150, audioContext.currentTime);
+                    gainNode.gain.setValueAtTime(0.08, audioContext.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+                    oscillator.start(audioContext.currentTime);
+                    oscillator.stop(audioContext.currentTime + 0.5);
+                    break;
+            }
+        }
+        
+        function startGame() {
+            console.log('🎮 用户点击开始射箭游戏');
+            
+            // 激活音频上下文
+            if (audioContext.state === 'suspended') {
+                audioContext.resume();
+            }
+            
+            // 隐藏开始按钮，显示游戏控制按钮
+            document.getElementById('startGameBtn').style.display = 'none';
+            document.getElementById('newGameBtn').style.display = 'inline-block';
+            document.getElementById('pauseBtn').style.display = 'inline-block';
+            
+            // 开始游戏
+            newGame();
+        }
+
+        function initGame() {
+            console.log('🎯 初始化射箭游戏...');
+            initAudio();
+            
+            // 设置初始目标位置
+            positionTarget();
+            
+            // 设置风力
+            updateWind();
+            
+            // 绑定事件
+            setupEventListeners();
+            
+            // 开始游戏循环
+            gameLoop();
+            
+            updateUI();
+            console.log('✅ 射箭游戏初始化完成!');
+        }
+
+        function setupEventListeners() {
+            console.log('设置事件监听器...');
+            const gameArea = document.getElementById('gameArea');
+            
+            // 鼠标事件
+            gameArea.addEventListener('mousedown', startAiming);
+            gameArea.addEventListener('mouseup', shoot);
+            gameArea.addEventListener('mousemove', updateAiming);
+            
+            // 触摸事件
+            gameArea.addEventListener('touchstart', handleTouch);
+            gameArea.addEventListener('touchend', handleTouchEnd);
+            gameArea.addEventListener('touchmove', handleTouchMove);
+            
+            console.log('事件监听器设置完成');
+        }
+
+        function handleTouch(e) {
+            e.preventDefault();
+            const touch = e.touches[0];
+            const mouseEvent = new MouseEvent('mousedown', {
+                clientX: touch.clientX,
+                clientY: touch.clientY
+            });
+            startAiming(mouseEvent);
+        }
+
+        function handleTouchEnd(e) {
+            e.preventDefault();
+            shoot();
+        }
+
+        function handleTouchMove(e) {
+            e.preventDefault();
+            const touch = e.touches[0];
+            const mouseEvent = new MouseEvent('mousemove', {
+                clientX: touch.clientX,
+                clientY: touch.clientY
+            });
+            updateAiming(mouseEvent);
+        }
+
+        function startAiming(e) {
+            if (gameState.isPaused || gameState.arrows <= 0) return;
+            
+            console.log('🎯 开始瞄准...');
+            gameState.isAiming = true;
+            gameState.power = 0;
+            gameState.powerDirection = 1;
+            
+            const crosshair = document.getElementById('crosshair');
+            crosshair.style.opacity = '1';
+            
+            updateCrosshair(e);
+            startPowerMeter();
+        }
+
+        function updateAiming(e) {
+            if (!gameState.isAiming) return;
+            
+            updateCrosshair(e);
+            updateTrajectory(e);
+            
+            // 存储瞄准点，而不是直接用于命中判定
+            const rect = document.getElementById('gameArea').getBoundingClientRect();
+            gameState.aimX = e.clientX - rect.left;
+            gameState.aimY = e.clientY - rect.top;
+        }
+
+        function updateCrosshair(e) {
+            const crosshair = document.getElementById('crosshair');
+            const rect = document.getElementById('gameArea').getBoundingClientRect();
+            
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            
+            crosshair.style.left = (x - 15) + 'px';
+            crosshair.style.top = (y - 15) + 'px';
+        }
+
+        function updateTrajectory(e) {
+            const trajectoryLine = document.getElementById('trajectoryLine');
+            const rect = document.getElementById('gameArea').getBoundingClientRect();
+            const bow = document.getElementById('bow');
+            const bowRect = bow.getBoundingClientRect();
+            
+            const startX = bowRect.left + bowRect.width/2 - rect.left;
+            const startY = bowRect.top + bowRect.height/2 - rect.top;
+            const endX = e.clientX - rect.left;
+            const endY = e.clientY - rect.top;
+            
+            const deltaX = endX - startX;
+            const deltaY = endY - startY;
+            const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+            const angle = Math.atan2(deltaY, deltaX) * 180 / Math.PI;
+            
+            trajectoryLine.style.left = startX + 'px';
+            trajectoryLine.style.top = startY + 'px';
+            trajectoryLine.style.width = Math.min(distance, 200) + 'px';
+            trajectoryLine.style.transform = `rotate(${angle}deg)`;
+            trajectoryLine.style.opacity = '0.7';
+        }
+
+        function startPowerMeter() {
+            console.log('🔥 开始力度计算...');
+            const powerInterval = setInterval(() => {
+                if (!gameState.isAiming) {
+                    clearInterval(powerInterval);
+                    return;
+                }
+                
+                gameState.power += gameState.powerDirection * 2;
+                
+                if (gameState.power >= 100) {
+                    gameState.power = 100;
+                    gameState.powerDirection = -1;
+                } else if (gameState.power <= 0) {
+                    gameState.power = 0;
+                    gameState.powerDirection = 1;
+                }
+                
+                document.getElementById('powerFill').style.width = gameState.power + '%';
+            }, 50);
+        }
+
+        function shoot() {
+            if (!gameState.isAiming || gameState.arrows <= 0) return;
+            
+            console.log('🏹 射箭!', {
+                power: gameState.power,
+                windForce: gameState.windForce,
+                arrows: gameState.arrows,
+                aimPoint: { x: gameState.aimX, y: gameState.aimY }
+            });
+            
+            gameState.isAiming = false;
+            gameState.arrows--;
+            gameState.shots++;
+            
+            const crosshair = document.getElementById('crosshair');
+            const trajectoryLine = document.getElementById('trajectoryLine');
+            crosshair.style.opacity = '0';
+            trajectoryLine.style.opacity = '0';
+            
+            // 创建箭矢动画，传递瞄准点
+            createArrow(gameState.aimX, gameState.aimY);
+            
+            playSound('shoot');
+            updateUI();
+            
+            // 检查游戏结束
+            if (gameState.arrows <= 0) {
+                setTimeout(() => {
+                    console.log('🎮 游戏结束');
+                    alert(`游戏结束！\n最终分数: ${gameState.score}\n命中率: ${Math.round((gameState.hits/gameState.shots)*100)}%`);
+                }, 1000);
+            }
+        }
+
+        function createArrow(aimX, aimY) {
+            console.log('🏹 创建箭矢动画，使用真实瞄准点:', { aimX, aimY });
+            const bow = document.getElementById('bow');
+            const gameArea = document.getElementById('gameArea');
+            
+            const arrow = document.createElement('div');
+            arrow.className = 'arrow';
+            
+            const bowRect = bow.getBoundingClientRect();
+            const gameRect = gameArea.getBoundingClientRect();
+            
+            const startX = bowRect.left + bowRect.width/2 - gameRect.left;
+            const startY = bowRect.top + bowRect.height/2 - gameRect.top;
+            
+            // 使用传入的瞄准点作为目标，aimX和aimY已经是相对于gameArea的坐标
+            const endX = aimX;
+            const endY = aimY;
+            
+            arrow.style.left = startX + 'px';
+            arrow.style.top = startY + 'px';
+            
+            const deltaX = endX - startX;
+            const deltaY = endY - startY;
+            const angle = Math.atan2(deltaY, deltaX) * 180 / Math.PI;
+            arrow.style.transform = `rotate(${angle}deg)`;
+            
+            gameArea.appendChild(arrow);
+            
+            // 应用风力影响 - 基于距离和风力强度
+            const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+            const windEffect = gameState.windForce * gameState.windDirection * (distance / 500); // 风力基于距离
+            const finalX = endX + windEffect;
+            const finalY = endY;
+            
+            console.log('🎯 箭矢轨迹计算:', {
+                start: { x: startX, y: startY },
+                aim: { x: endX, y: endY },
+                final: { x: finalX, y: finalY },
+                windEffect,
+                distance
+            });
+            
+            // 动画到目标位置 - 减慢箭矢速度，更容易看到
+            arrow.style.transition = 'all 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+            arrow.style.left = finalX + 'px';
+            arrow.style.top = finalY + 'px';
+            
+            // 检查命中
+            setTimeout(() => {
+                checkHit(finalX, finalY);
+                arrow.remove();
+            }, 1200);
+        }
+
+        function checkHit(arrowX, arrowY) {
+            console.log('🎯 检查命中...');
+            const target = document.getElementById('target');
+            const targetRect = target.getBoundingClientRect();
+            const gameRect = document.getElementById('gameArea').getBoundingClientRect();
+            
+            const targetCenterX = targetRect.left + targetRect.width/2 - gameRect.left;
+            const targetCenterY = targetRect.top + targetRect.height/2 - gameRect.top;
+            
+            const distance = Math.sqrt(
+                Math.pow(arrowX - targetCenterX, 2) + 
+                Math.pow(arrowY - targetCenterY, 2)
+            );
+            
+            console.log('命中检测:', {
+                arrowPos: { x: arrowX, y: arrowY },
+                targetCenter: { x: targetCenterX, y: targetCenterY },
+                distance: distance
+            });
+            
+            let points = 0;
+            let hitType = '';
+            
+            if (distance <= 25) {
+                // 红心 - 扩大命中范围
+                points = 100;
+                hitType = 'bullseye';
+                bullseyeCount++;
+                streakCount++;
+                playSound('bullseye');
+                createParticles(targetCenterX, targetCenterY, '#ff1493');
+                console.log('🎯 红心命中!', { points, bullseyeCount });
+                
+                if (bullseyeCount >= 10) {
+                    unlockAchievement('bullseye');
+                }
+            } else if (distance <= 45) {
+                // 内环 - 扩大命中范围
+                points = 50;
+                hitType = 'inner';
+                streakCount++;
+                playSound('hit');
+                createParticles(targetCenterX, targetCenterY, '#ff69b4');
+                console.log('🎯 内环命中!', { points });
+            } else if (distance <= 65) {
+                // 外环 - 扩大命中范围
+                points = 25;
+                hitType = 'outer';
+                streakCount++;
+                playSound('hit');
+                createParticles(targetCenterX, targetCenterY, '#ffb6c1');
+                console.log('🎯 外环命中!', { points });
+            } else {
+                // 脱靶
+                hitType = 'miss';
+                streakCount = 0;
+                playSound('miss');
+                console.log('❌ 脱靶!');
+            }
+            
+            if (points > 0) {
+                gameState.hits++;
+                gameState.score += points;
+                
+                // 显示得分
+                showScorePopup(arrowX, arrowY, points);
+                
+                // 检查第一次命中成就
+                if (gameState.hits === 1) {
+                    unlockAchievement('firstHit');
+                }
+                
+                // 检查连击成就
+                if (streakCount >= 5) {
+                    unlockAchievement('perfectShot');
+                }
+                
+                // 检查风力成就
+                if (Math.abs(gameState.windForce) >= 3 && points > 0) {
+                    unlockAchievement('windMaster');
+                }
+                
+                // 升级检查
+                const newLevel = Math.floor(gameState.score / 500) + 1;
+                if (newLevel > gameState.level) {
+                    gameState.level = newLevel;
+                    console.log('📈 等级提升!', { newLevel });
+                    
+                    if (gameState.level >= 5) {
+                        unlockAchievement('levelUp');
+                    }
+                    
+                    // 增加难度
+                    gameState.isMovingTarget = gameState.level >= 3;
+                    updateTargetMovement();
+                }
+            }
+            
+            updateUI();
+            positionTarget();
+            updateWind();
+        }
+
+        function showScorePopup(x, y, points) {
+            console.log('显示得分弹窗:', { x, y, points });
+            const popup = document.createElement('div');
+            popup.className = 'score-popup';
+            popup.textContent = '+' + points;
+            popup.style.left = x + 'px';
+            popup.style.top = y + 'px';
+            
+            document.getElementById('gameArea').appendChild(popup);
+            
+            setTimeout(() => popup.remove(), 2000);
+        }
+
+        function createParticles(x, y, color) {
+            console.log('创建粒子特效:', { x, y, color });
+            for (let i = 0; i < 8; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.background = color;
+                particle.style.left = x + 'px';
+                particle.style.top = y + 'px';
+                
+                const angle = (i / 8) * Math.PI * 2;
+                const distance = 30 + Math.random() * 20;
+                const dx = Math.cos(angle) * distance;
+                const dy = Math.sin(angle) * distance;
+                
+                particle.style.setProperty('--dx', dx + 'px');
+                particle.style.setProperty('--dy', dy + 'px');
+                
+                document.getElementById('gameArea').appendChild(particle);
+                
+                setTimeout(() => particle.remove(), 1000);
+            }
+        }
+
+        function positionTarget() {
+            console.log('🎯 重新定位目标...');
+            const target = document.getElementById('target');
+            const gameArea = document.getElementById('gameArea');
+            const gameRect = gameArea.getBoundingClientRect();
+            
+            // 确保目标在右侧区域
+            const minX = gameRect.width * 0.6;
+            const maxX = gameRect.width - 120;
+            const minY = 50;
+            const maxY = gameRect.height - 150;
+            
+            gameState.targetX = minX + Math.random() * (maxX - minX);
+            gameState.targetY = minY + Math.random() * (maxY - minY);
+            
+            target.style.left = gameState.targetX + 'px';
+            target.style.top = gameState.targetY + 'px';
+            
+            console.log('目标新位置:', { x: gameState.targetX, y: gameState.targetY });
+        }
+
+        function updateTargetMovement() {
+            const target = document.getElementById('target');
+            
+            if (gameState.isMovingTarget) {
+                target.classList.add('moving');
+                console.log('🎯 启用移动目标');
+            } else {
+                target.classList.remove('moving');
+                console.log('🎯 禁用移动目标');
+            }
+        }
+
+        function updateWind() {
+            console.log('💨 更新风力...');
+            gameState.windForce = Math.random() * 2 - 1; // 减少风力影响：-1 到 1
+            gameState.windDirection = gameState.windForce >= 0 ? 1 : -1;
+            
+            const windArrow = document.getElementById('windArrow');
+            const windForceAbs = Math.abs(gameState.windForce);
+            
+            let windSymbol = '';
+            if (windForceAbs < 0.3) {
+                windSymbol = '○'; // 无风
+            } else if (windForceAbs < 0.7) {
+                windSymbol = gameState.windDirection > 0 ? '→' : '←'; // 微风
+            } else {
+                windSymbol = gameState.windDirection > 0 ? '⇒' : '⇐'; // 强风
+            }
+            
+            windArrow.textContent = windSymbol;
+            windArrow.style.color = windForceAbs > 0.7 ? '#ff6347' : '#00bfff';
+            
+            console.log('风力更新:', {
+                force: gameState.windForce,
+                direction: gameState.windDirection,
+                symbol: windSymbol
+            });
+        }
+
+        function unlockAchievement(achievementKey) {
+            const achievement = achievements[achievementKey];
+            if (achievement.unlocked) return;
+            
+            console.log('🏆 解锁成就:', achievementKey, achievement);
+            achievement.unlocked = true;
+            
+            document.getElementById('achievementTitle').textContent = achievement.title;
+            document.getElementById('achievementDesc').textContent = achievement.desc;
+            document.getElementById('achievementPopup').style.display = 'block';
+        }
+
+        function closeAchievement() {
+            document.getElementById('achievementPopup').style.display = 'none';
+        }
+
+        function updateUI() {
+            console.log('🔄 更新UI', gameState);
+            
+            document.getElementById('arrowsDisplay').textContent = gameState.arrows;
+            document.getElementById('scoreDisplay').textContent = gameState.score;
+            document.getElementById('hitsDisplay').textContent = gameState.hits;
+            document.getElementById('levelDisplay').textContent = gameState.level;
+            
+            const accuracy = gameState.shots > 0 ? Math.round((gameState.hits / gameState.shots) * 100) : 0;
+            document.getElementById('accuracyDisplay').textContent = accuracy + '%';
+            
+            document.getElementById('powerFill').style.width = gameState.power + '%';
+        }
+
+        function newGame() {
+            console.log('🆕 开始新游戏...');
+            gameState = {
+                arrows: 10,
+                score: 0,
+                hits: 0,
+                shots: 0,
+                level: 1,
+                isPaused: false,
+                isAiming: false,
+                power: 0,
+                powerDirection: 1,
+                windForce: 0,
+                windDirection: 1,
+                targetX: 0,
+                targetY: 0,
+                isMovingTarget: false
+            };
+            
+            streakCount = 0;
+            bullseyeCount = 0;
+            
+            // 重置成就
+            Object.keys(achievements).forEach(key => {
+                achievements[key].unlocked = false;
+            });
+            
+            positionTarget();
+            updateWind();
+            updateTargetMovement();
+            updateUI();
+            
+            console.log('✅ 新游戏开始!');
+        }
+
+        function pauseGame() {
+            gameState.isPaused = !gameState.isPaused;
+            const pauseBtn = document.getElementById('pauseBtn');
+            
+            console.log('⏸️ 游戏暂停状态:', gameState.isPaused);
+            
+            if (gameState.isPaused) {
+                pauseBtn.textContent = '▶️ 继续';
+            } else {
+                pauseBtn.textContent = '⏸️ 暂停';
+            }
+        }
+
+        function showHelp() {
+            alert(`🎯 蓓蓓的射箭挑战 - 游戏说明
+
+🎮 操作方法:
+• 鼠标按下开始瞄准
+• 移动鼠标调整方向
+• 松开鼠标射箭
+
+🎯 得分规则:
+• 红心 💖: 100分
+• 内环: 50分  
+• 外环: 25分
+
+💨 游戏要素:
+• 注意风力影响箭矢轨迹
+• 3级后目标会移动
+• 连续命中获得更高分数
+
+🏆 成就系统:
+• 首次命中、红心高手
+• 神射手、风之掌控者等
+
+祝你游戏愉快！💖`);
+        }
+
+        function gameLoop() {
+            // 游戏主循环 - 目前主要用于未来扩展
+            requestAnimationFrame(gameLoop);
+        }
+
+        // 初始化游戏页面
+        console.log('🚀 加载射箭游戏页面...');
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('🎯 蓓蓓的射箭挑战加载完成!');
+            // 不自动开始游戏，等待用户点击开始按钮
+            positionTarget();
+            updateWind();
+            updateUI();
+        });
+        
+        // 如果DOM已加载完成
+        if (document.readyState === 'loading') {
+            console.log('⏳ 等待DOM加载...');
+        } else {
+            console.log('📱 DOM已就绪，立即设置页面');
+            positionTarget();
+            updateWind();
+            updateUI();
+        }
+
+        console.log('✅ 蓓蓓的射箭挑战脚本加载完成!');
+    </script>
+</body>
+</html>

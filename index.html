@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>蓓蓓游戏中心</title>
+    <style>
+        :root {
+            --pink: #ff6b9d;
+            --pink2: #ff1493;
+            --bg: #fff5f7;
+            --card: #ffffff;
+            --text: #3d2c3a;
+            --shadow: 0 4px 20px rgba(255,107,157,0.15);
+        }
+        * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+            background: linear-gradient(180deg, #ffe0ec 0%, #fff5f7 30%, #ffe0f0 100%);
+            min-height: 100vh;
+            min-height: 100dvh;
+            color: var(--text);
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* 顶部装饰 */
+        .header-decoration {
+            position: relative;
+            height: 200px;
+            background: linear-gradient(180deg, var(--pink) 0%, #ff4785 100%);
+            border-radius: 0 0 50% 50% / 0 0 60px 60px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            margin-bottom: -40px;
+        }
+        .header-bg-hearts {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+        }
+        .float-heart {
+            position: absolute;
+            font-size: 24px;
+            animation: floatUp 4s ease-in-out infinite;
+            opacity: 0.6;
+        }
+        @keyframes floatUp {
+            0%,100% { transform: translateY(0) rotate(0deg); opacity: 0.3; }
+            50% { transform: translateY(-30px) rotate(15deg); opacity: 0.8; }
+        }
+        .header-title {
+            font-size: 28px;
+            font-weight: 800;
+            color: white;
+            text-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            z-index: 1;
+            letter-spacing: 2px;
+        }
+        .header-subtitle {
+            font-size: 14px;
+            color: rgba(255,255,255,0.85);
+            margin-top: 6px;
+            z-index: 1;
+        }
+
+        /* 主容器 */
+        .main-container {
+            max-width: 480px;
+            margin: 0 auto;
+            padding: 0 16px 40px;
+        }
+
+        /* 游戏列表 */
+        .section-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--pink2);
+            margin: 24px 0 12px;
+            padding-left: 4px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .games-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .game-card {
+            background: var(--card);
+            border-radius: 18px;
+            box-shadow: var(--shadow);
+            padding: 0;
+            text-decoration: none;
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            transition: all 0.2s ease;
+            position: relative;
+            overflow: hidden;
+            border: 1.5px solid transparent;
+            -webkit-user-select: none;
+        }
+        .game-card:active {
+            transform: scale(0.97);
+            background: #fff0f5;
+            border-color: var(--pink);
+        }
+        .game-card:active::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: rgba(255,107,157,0.06);
+            border-radius: 18px;
+        }
+        .card-icon {
+            width: 64px;
+            height: 64px;
+            min-width: 64px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+            border-radius: 16px;
+            margin: 12px;
+        }
+        .card-icon.c1 { background: linear-gradient(135deg, #ffe0e8, #ffccd5); }
+        .card-icon.c2 { background: linear-gradient(135deg, #e8f4fd, #cce5ff); }
+        .card-icon.c3 { background: linear-gradient(135deg, #fef3e0, #ffe8cc); }
+        .card-icon.c4 { background: linear-gradient(135deg, #e0f5e8, #ccedd5); }
+        .card-icon.c5 { background: linear-gradient(135deg, #f3e0f8, #e5ccf0); }
+        .card-icon.c6 { background: linear-gradient(135deg, #fde8ec, #fad1da); }
+        .card-icon.c7 { background: linear-gradient(135deg, #e8faf0, #c8f0d8); }
+        .card-info {
+            flex: 1;
+            padding: 12px 12px 12px 0;
+            min-width: 0;
+        }
+        .card-name {
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 3px;
+        }
+        .card-desc {
+            font-size: 12px;
+            color: #999;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .card-arrow {
+            font-size: 18px;
+            color: #ccc;
+            margin-right: 16px;
+            transition: transform 0.2s;
+        }
+        .game-card:active .card-arrow {
+            transform: translateX(4px);
+            color: var(--pink);
+        }
+
+        /* 底部 */
+        .footer {
+            text-align: center;
+            padding: 30px 0 20px;
+            color: #ccc;
+            font-size: 12px;
+        }
+        .footer-hearts {
+            font-size: 20px;
+            letter-spacing: 4px;
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        /* WeChat分享引导 */
+        .share-tip {
+            background: linear-gradient(135deg, #fff, #fff0f5);
+            border-radius: 14px;
+            padding: 14px 18px;
+            margin-top: 16px;
+            text-align: center;
+            font-size: 13px;
+            color: #999;
+            border: 1px dashed #ffc0cb;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .share-tip span { font-size: 18px; }
+
+        /* 响应式 */
+        @media (min-width: 481px) {
+            .games-list {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 12px;
+            }
+            .game-card {
+                flex-direction: column;
+                align-items: stretch;
+                padding: 0;
+            }
+            .card-icon {
+                width: auto;
+                height: 60px;
+                min-width: auto;
+                margin: 0;
+                border-radius: 18px 18px 0 0;
+                font-size: 40px;
+            }
+            .card-info { padding: 14px; }
+            .card-arrow { display: none; }
+        }
+    </style>
+</head>
+<body>
+    <div class="header-decoration">
+        <div class="header-bg-hearts">
+            <span class="float-heart" style="top:15%;left:10%;animation-delay:0s;">💕</span>
+            <span class="float-heart" style="top:25%;left:80%;animation-delay:1s;">💖</span>
+            <span class="float-heart" style="top:60%;left:20%;animation-delay:2s;">💗</span>
+            <span class="float-heart" style="top:10%;left:55%;animation-delay:0.5s;">💝</span>
+            <span class="float-heart" style="top:70%;left:75%;animation-delay:1.5s;">✨</span>
+            <span class="float-heart" style="top:40%;left:40%;animation-delay:3s;">🌸</span>
+        </div>
+        <div class="header-title">🎮 蓓蓓游戏中心</div>
+        <div class="header-subtitle">点一下，马上玩！</div>
+    </div>
+
+    <div class="main-container">
+        <div class="section-title">💝 精品游戏</div>
+        <div class="games-list">
+            <a href="beibei-super-heart-fighter.html" class="game-card">
+                <div class="card-icon c1">💖</div>
+                <div class="card-info">
+                    <div class="card-name">超级爱心战机</div>
+                    <div class="card-desc">粒子特效 + 成就系统 + 技能</div>
+                </div>
+                <div class="card-arrow">›</div>
+            </a>
+            <a href="beibei-heart-match.html" class="game-card">
+                <div class="card-icon c2">💝</div>
+                <div class="card-info">
+                    <div class="card-name">爱心连连看</div>
+                    <div class="card-desc">三难度 + 智能提示 + 重排</div>
+                </div>
+                <div class="card-arrow">›</div>
+            </a>
+            <a href="beibei-heart-tetris.html" class="game-card">
+                <div class="card-icon c3">❤️</div>
+                <div class="card-info">
+                    <div class="card-name">爱心俄罗斯方块</div>
+                    <div class="card-desc">7种爱心方块 + 消除特效</div>
+                </div>
+                <div class="card-arrow">›</div>
+            </a>
+            <a href="beibei-archery-challenge.html" class="game-card">
+                <div class="card-icon c4">🏹</div>
+                <div class="card-info">
+                    <div class="card-name">射箭挑战</div>
+                    <div class="card-desc">物理弹道 + 风力影响</div>
+                </div>
+                <div class="card-arrow">›</div>
+            </a>
+            <a href="beibei-memory-flip.html" class="game-card">
+                <div class="card-icon c5">🧩</div>
+                <div class="card-info">
+                    <div class="card-name">记忆翻牌</div>
+                    <div class="card-desc">三难度 + 可爱图案</div>
+                </div>
+                <div class="card-arrow">›</div>
+            </a>
+            <a href="beibei-parkour-adventure.html" class="game-card">
+                <div class="card-icon c6">🏃‍♀️</div>
+                <div class="card-info">
+                    <div class="card-name">跑酷冒险</div>
+                    <div class="card-desc">跳跃滑铲 + 钻石收集</div>
+                </div>
+                <div class="card-arrow">›</div>
+            </a>
+            <a href="beibei-pink-heart-fighter.html" class="game-card">
+                <div class="card-icon c7">💗</div>
+                <div class="card-info">
+                    <div class="card-name">爱心战机 v3</div>
+                    <div class="card-desc">粉色飞机 + 自动射击</div>
+                </div>
+                <div class="card-arrow">›</div>
+            </a>
+        </div>
+
+        <div class="section-title">👶 幼儿专区</div>
+        <div class="games-list">
+            <a href="beibei-number-click.html" class="game-card">
+                <div class="card-icon c2">🔢</div>
+                <div class="card-info">
+                    <div class="card-name">数字点击</div>
+                    <div class="card-desc">1-10 数字学习 · 中英粤</div>
+                </div>
+                <div class="card-arrow">›</div>
+            </a>
+            <a href="jialin-animal-sounds.html" class="game-card">
+                <div class="card-icon c4">🐶</div>
+                <div class="card-info">
+                    <div class="card-name">动物叫声</div>
+                    <div class="card-desc">认识动物 · 听声辨物</div>
+                </div>
+                <div class="card-arrow">›</div>
+            </a>
+        </div>
+
+        <div class="share-tip">
+            <span>📤</span> 点击右上角 ··· 分享给朋友<br>微信里直接点击就能玩！
+        </div>
+
+        <div class="footer">
+            <span class="footer-hearts">💖 💕 💗 💝 💖</span>
+            Made with ❤️ for 蓓蓓 & 家林
+        </div>
+    </div>
+</body>
+</html>

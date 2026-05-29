@@ -1,0 +1,879 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>家林动物叫声 - Animal Sounds</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: 'Arial Rounded MT Bold', 'Comic Sans MS', sans-serif;
+            background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+            overflow: hidden;
+            touch-action: none;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* 顶部控制栏 */
+        .top-bar {
+            padding: 12px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.95);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .game-title {
+            color: #ff6b6b;
+            font-size: 22px;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .controls {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 20px;
+            background: #ff6b6b;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 13px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            transition: all 0.2s;
+        }
+
+        .btn:active {
+            transform: scale(0.95);
+        }
+
+        .btn.active {
+            background: #4ade80;
+        }
+
+        /* 设置按钮 */
+        .settings-btn {
+            position: fixed;
+            top: 15px;
+            right: 15px;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.9);
+            border: 3px solid #ff6b6b;
+            color: #ff6b6b;
+            font-size: 22px;
+            cursor: pointer;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            transition: all 0.3s;
+        }
+
+        .settings-btn.holding {
+            background: #ff6b6b;
+            color: white;
+            transform: scale(1.15);
+        }
+
+        /* 设置面板 */
+        .settings-panel {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.85);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .settings-panel.show {
+            display: flex;
+        }
+
+        .settings-content {
+            background: white;
+            border-radius: 25px;
+            padding: 35px;
+            max-width: 450px;
+            width: 90%;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        }
+
+        .settings-content h2 {
+            margin-bottom: 25px;
+            color: #ff6b6b;
+            font-size: 28px;
+            text-align: center;
+        }
+
+        .setting-item {
+            margin: 20px 0;
+        }
+
+        .setting-item label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: bold;
+            color: #333;
+            font-size: 16px;
+        }
+
+        .setting-item select {
+            width: 100%;
+            padding: 12px;
+            border-radius: 12px;
+            border: 2px solid #ff6b6b;
+            font-size: 16px;
+            background: white;
+        }
+
+        .setting-item input[type="range"] {
+            width: 100%;
+        }
+
+        /* 游戏区域 */
+        .game-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            position: relative;
+            overflow-y: auto;
+        }
+
+        /* 提示区域 */
+        .prompt-area {
+            margin-bottom: 20px;
+            padding: 20px 30px;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            min-height: 70px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+            max-width: 700px;
+            width: 90%;
+        }
+
+        .prompt-text {
+            font-size: 24px;
+            font-weight: bold;
+            color: #ff6b6b;
+            text-align: center;
+        }
+
+        /* 动物网格 */
+        .animals-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            max-width: 700px;
+            width: 100%;
+            padding: 10px;
+        }
+
+        @media (min-width: 600px) {
+            .animals-grid {
+                grid-template-columns: repeat(4, 1fr);
+            }
+        }
+
+        @media (min-width: 900px) {
+            .animals-grid {
+                grid-template-columns: repeat(6, 1fr);
+                max-width: 1000px;
+            }
+        }
+
+        .animal-card {
+            aspect-ratio: 1;
+            border: none;
+            border-radius: 25px;
+            background: white;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+            transition: all 0.3s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 15px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .animal-card:active {
+            transform: scale(0.95);
+        }
+
+        .animal-emoji {
+            font-size: 80px;
+            margin-bottom: 10px;
+            transition: all 0.3s;
+        }
+
+        .animal-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 15px;
+            transition: all 0.3s;
+        }
+
+        .animal-card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .animal-img-container {
+            width: 80%;
+            height: 60%;
+            border-radius: 15px;
+            overflow: hidden;
+            margin-bottom: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        }
+
+        .animal-name {
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+            text-align: center;
+        }
+
+        .animal-card.bounce .animal-emoji {
+            animation: bounce 0.6s ease;
+        }
+
+        .animal-card.correct {
+            animation: correctPulse 0.8s ease;
+        }
+
+        .animal-card.wrong {
+            animation: shake 0.5s ease;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0) scale(1); }
+            25% { transform: translateY(-20px) scale(1.1) rotate(-10deg); }
+            50% { transform: translateY(0) scale(1.15) rotate(5deg); }
+            75% { transform: translateY(-10px) scale(1.1) rotate(-5deg); }
+        }
+
+        @keyframes correctPulse {
+            0%, 100% { transform: scale(1); background: white; }
+            50% { transform: scale(1.2); background: #4ade80; box-shadow: 0 0 30px #4ade80; }
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-15px) rotate(-5deg); }
+            75% { transform: translateX(15px) rotate(5deg); }
+        }
+
+        /* 粒子效果 */
+        .particle {
+            position: fixed;
+            pointer-events: none;
+            z-index: 999;
+            font-size: 24px;
+        }
+
+        /* 加载屏幕 */
+        .loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            color: #ff6b6b;
+        }
+
+        .loading-screen h1 {
+            font-size: 80px;
+            margin-bottom: 20px;
+            animation: float 2s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+
+        .loading-text {
+            font-size: 32px;
+            margin-bottom: 30px;
+            font-weight: bold;
+        }
+
+        .start-btn {
+            margin-top: 20px;
+            padding: 18px 50px;
+            font-size: 26px;
+            border: none;
+            border-radius: 35px;
+            background: #ff6b6b;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 6px 20px rgba(255,107,107,0.4);
+            transition: all 0.3s;
+        }
+
+        .start-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(255,107,107,0.5);
+        }
+
+        .start-btn:active {
+            transform: translateY(-1px);
+        }
+
+        /* 音量指示 */
+        .volume-display {
+            font-size: 18px;
+            color: #666;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <!-- 加载屏幕 -->
+    <div class="loading-screen" id="loadingScreen">
+        <h1>🐶🐱�</h1>
+        <div class="loading-text">家林动物叫声</div>
+        <p style="font-size: 18px; color: #666; margin-bottom: 20px;">12种可爱动物等你来探索！</p>
+        <button class="start-btn" id="startBtn">开始探索 🎵</button>
+    </div>
+
+    <a href="index.html" style="position:fixed;left:10px;top:10px;background:rgba(255,255,255,0.9);border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;text-decoration:none;font-size:20px;z-index:500;box-shadow:0 2px 8px rgba(0,0,0,0.15);">🏠</a>
+    <!-- 长按进入设置 -->
+    <button class="settings-btn" id="settingsBtn">⚙️</button>
+
+    <!-- 游戏主界面 -->
+    <div class="top-bar" style="display: none;" id="topBar">
+        <div class="game-title">🐾 家林动物叫声</div>
+        <div class="controls">
+            <button class="btn active" id="exploreModeBtn">自由探索</button>
+            <button class="btn" id="guessModeBtn">听声找动物</button>
+        </div>
+    </div>
+
+    <div class="game-container" style="display: none;" id="gameContainer">
+        <!-- 提示区域 -->
+        <div class="prompt-area">
+            <div class="prompt-text" id="promptText">点击动物听声音！🎵</div>
+        </div>
+
+        <!-- 动物网格 -->
+        <div class="animals-grid" id="animalsGrid">
+            <!-- 通过JS生成 -->
+        </div>
+    </div>
+
+    <!-- 设置面板 -->
+    <div class="settings-panel" id="settingsPanel">
+        <div class="settings-content">
+            <h2>🎨 家长设置</h2>
+            
+            <div class="setting-item">
+                <label>🌍 语言选择：</label>
+                <select id="languageSelect">
+                    <option value="zh">🇨🇳 中文（普通话）</option>
+                    <option value="en">🇺🇸 English（英语）</option>
+                    <option value="yue">🇭🇰 粤语</option>
+                </select>
+            </div>
+
+            <div class="setting-item">
+                <label>🔊 音量：</label>
+                <input type="range" id="volumeSlider" min="0" max="100" value="80">
+                <div class="volume-display" id="volumeDisplay">音量: 80%</div>
+            </div>
+
+            <button class="btn" onclick="closeSettings()" style="width: 100%; margin-top: 25px; padding: 15px; font-size: 16px;">✓ 关闭设置</button>
+        </div>
+    </div>
+
+    <script>
+        // ========== 动物数据 ==========
+        const animals = [
+            {
+                id: 'dog',
+                emoji: '🐶',
+                names: { zh: '小狗', en: 'Dog', yue: '狗狗' },
+                sounds: { zh: '汪汪', en: 'Woof Woof', yue: '汪汪' },
+                frequency: 300,
+                image: 'https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=400&h=400&fit=crop'
+            },
+            {
+                id: 'cat',
+                emoji: '🐱',
+                names: { zh: '小猫', en: 'Cat', yue: '猫咪' },
+                sounds: { zh: '喵喵', en: 'Meow Meow', yue: '喵喵' },
+                frequency: 500,
+                image: 'https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=400&h=400&fit=crop'
+            },
+            {
+                id: 'cow',
+                emoji: '🐮',
+                names: { zh: '小牛', en: 'Cow', yue: '牛牛' },
+                sounds: { zh: '哞哞', en: 'Moo Moo', yue: '哞哞' },
+                frequency: 200,
+                image: 'https://images.unsplash.com/photo-1516467508483-a7212febe31a?w=400&h=400&fit=crop'
+            },
+            {
+                id: 'sheep',
+                emoji: '🐑',
+                names: { zh: '小羊', en: 'Sheep', yue: '羊羊' },
+                sounds: { zh: '咩咩', en: 'Baa Baa', yue: '咩咩' },
+                frequency: 400,
+                image: 'https://images.unsplash.com/photo-1583337130417-3346a1be7dee?w=400&h=400&fit=crop'
+            },
+            {
+                id: 'duck',
+                emoji: '🦆',
+                names: { zh: '小鸭', en: 'Duck', yue: '鸭仔' },
+                sounds: { zh: '嘎嘎', en: 'Quack Quack', yue: '嘎嘎' },
+                frequency: 600,
+                image: 'https://images.unsplash.com/photo-1570406636008-8ee38957bc3b?w=400&h=400&fit=crop'
+            },
+            {
+                id: 'bird',
+                emoji: '🐦',
+                names: { zh: '小鸟', en: 'Bird', yue: '雀仔' },
+                sounds: { zh: '叽叽', en: 'Tweet Tweet', yue: '叽叽' },
+                frequency: 800,
+                image: 'https://images.unsplash.com/photo-1552728089-57bdde30beb3?w=400&h=400&fit=crop'
+            },
+            {
+                id: 'horse',
+                emoji: '🐴',
+                names: { zh: '小马', en: 'Horse', yue: '马仔' },
+                sounds: { zh: '嘶嘶', en: 'Neigh Neigh', yue: '嘶嘶' },
+                frequency: 350,
+                image: 'https://images.unsplash.com/photo-1553284965-83fd3e82fa5a?w=400&h=400&fit=crop'
+            },
+            {
+                id: 'pig',
+                emoji: '🐷',
+                names: { zh: '小猪', en: 'Pig', yue: '猪仔' },
+                sounds: { zh: '哼哼', en: 'Oink Oink', yue: '哼哼' },
+                frequency: 250,
+                image: 'https://images.unsplash.com/photo-1516467508483-a7212febe31a?w=400&h=400&fit=crop'
+            },
+            {
+                id: 'chicken',
+                emoji: '🐔',
+                names: { zh: '小鸡', en: 'Chicken', yue: '鸡仔' },
+                sounds: { zh: '咯咯', en: 'Cluck Cluck', yue: '咯咯' },
+                frequency: 700,
+                image: 'https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?w=400&h=400&fit=crop'
+            },
+            {
+                id: 'rabbit',
+                emoji: '🐰',
+                names: { zh: '小兔', en: 'Rabbit', yue: '兔仔' },
+                sounds: { zh: '嘤嘤', en: 'Squeak Squeak', yue: '嘤嘤' },
+                frequency: 650,
+                image: 'https://images.unsplash.com/photo-1585110396000-c9ffd4e4b308?w=400&h=400&fit=crop'
+            },
+            {
+                id: 'elephant',
+                emoji: '🐘',
+                names: { zh: '大象', en: 'Elephant', yue: '大象' },
+                sounds: { zh: '嗯嗯', en: 'Trumpet Trumpet', yue: '嗯嗯' },
+                frequency: 150,
+                image: 'https://images.unsplash.com/photo-1564760055775-d63b17a55c44?w=400&h=400&fit=crop'
+            },
+            {
+                id: 'lion',
+                emoji: '🦁',
+                names: { zh: '狮子', en: 'Lion', yue: '狮子' },
+                sounds: { zh: '吼吼', en: 'Roar Roar', yue: '吼吼' },
+                frequency: 180,
+                image: 'https://images.unsplash.com/photo-1546182990-dffeafbe841d?w=400&h=400&fit=crop'
+            }
+        ];
+
+        // ========== 全局状态 ==========
+        const state = {
+            mode: 'explore', // 'explore' or 'guess'
+            language: 'zh',
+            volume: 0.8,
+            currentTarget: null,
+            locked: false,
+            audioContext: null,
+            initialized: false
+        };
+
+        // ========== 音频管理 ==========
+        function playAnimalSound(animal) {
+            if (!state.audioContext) return;
+
+            // 播放模拟动物叫声（使用振荡器）
+            const oscillator = state.audioContext.createOscillator();
+            const gainNode = state.audioContext.createGain();
+
+            oscillator.connect(gainNode);
+            gainNode.connect(state.audioContext.destination);
+
+            oscillator.frequency.value = animal.frequency;
+            oscillator.type = 'triangle';
+
+            gainNode.gain.setValueAtTime(state.volume * 0.3, state.audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, state.audioContext.currentTime + 0.5);
+
+            oscillator.start(state.audioContext.currentTime);
+            oscillator.stop(state.audioContext.currentTime + 0.5);
+
+            // 播放声音后说出名字
+            setTimeout(() => speakAnimalName(animal), 600);
+        }
+
+        function speakAnimalName(animal) {
+            if (!window.speechSynthesis) return;
+
+            speechSynthesis.cancel();
+
+            const text = `${animal.sounds[state.language]}。${animal.names[state.language]}`;
+            const utterance = new SpeechSynthesisUtterance(text);
+            
+            const langCodes = {
+                zh: 'zh-CN',
+                en: 'en-US',
+                yue: 'zh-HK'
+            };
+            
+            utterance.lang = langCodes[state.language];
+            utterance.rate = 0.85;
+            utterance.volume = state.volume;
+            
+            speechSynthesis.speak(utterance);
+        }
+
+        function playSound(type) {
+            if (!state.audioContext) return;
+
+            const frequencies = { correct: 600, wrong: 200, cheer: 800 };
+            const oscillator = state.audioContext.createOscillator();
+            const gainNode = state.audioContext.createGain();
+
+            oscillator.connect(gainNode);
+            gainNode.connect(state.audioContext.destination);
+
+            oscillator.frequency.value = frequencies[type];
+            oscillator.type = 'sine';
+
+            gainNode.gain.setValueAtTime(state.volume * 0.2, state.audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, state.audioContext.currentTime + 0.3);
+
+            oscillator.start(state.audioContext.currentTime);
+            oscillator.stop(state.audioContext.currentTime + 0.3);
+        }
+
+        // ========== 粒子效果 ==========
+        function createParticles(x, y, emoji, count = 8) {
+            for (let i = 0; i < count; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.textContent = emoji;
+                particle.style.left = x + 'px';
+                particle.style.top = y + 'px';
+                
+                document.body.appendChild(particle);
+
+                const angle = (Math.PI * 2 * i) / count;
+                const velocity = 80 + Math.random() * 60;
+                const vx = Math.cos(angle) * velocity;
+                const vy = Math.sin(angle) * velocity;
+
+                animateParticle(particle, vx, vy);
+            }
+        }
+
+        function animateParticle(element, vx, vy) {
+            let x = parseFloat(element.style.left);
+            let y = parseFloat(element.style.top);
+            let opacity = 1;
+            let startTime = Date.now();
+
+            function update() {
+                const elapsed = (Date.now() - startTime) / 1000;
+                
+                x += vx * 0.016;
+                y += vy * 0.016 + 150 * elapsed * elapsed;
+                opacity -= 0.016 * 1.5;
+
+                element.style.left = x + 'px';
+                element.style.top = y + 'px';
+                element.style.opacity = opacity;
+
+                if (opacity > 0 && y < window.innerHeight + 50) {
+                    requestAnimationFrame(update);
+                } else {
+                    element.remove();
+                }
+            }
+
+            requestAnimationFrame(update);
+        }
+
+        // ========== 游戏逻辑 ==========
+        function initGame() {
+            const grid = document.getElementById('animalsGrid');
+            grid.innerHTML = '';
+
+            animals.forEach(animal => {
+                const card = document.createElement('div');
+                card.className = 'animal-card';
+                card.dataset.id = animal.id;
+                
+                card.innerHTML = `
+                    <div class="animal-card-inner">
+                        <div class="animal-img-container">
+                            <img src="${animal.image}" alt="${animal.names[state.language]}" class="animal-image" onerror="this.style.display='none'; this.parentElement.innerHTML='${animal.emoji}'; this.parentElement.style.fontSize='60px'; this.parentElement.style.display='flex'; this.parentElement.style.alignItems='center'; this.parentElement.style.justifyContent='center';">
+                        </div>
+                        <div class="animal-name">${animal.names[state.language]}</div>
+                    </div>
+                `;
+                
+                card.addEventListener('click', () => handleAnimalClick(animal, card));
+                grid.appendChild(card);
+            });
+
+            if (state.mode === 'guess') {
+                startGuessMode();
+            }
+        }
+
+        function handleAnimalClick(animal, element) {
+            if (state.locked) return;
+            state.locked = true;
+
+            const rect = element.getBoundingClientRect();
+            const x = rect.left + rect.width / 2;
+            const y = rect.top + rect.height / 2;
+
+            if (state.mode === 'explore') {
+                // 自由探索模式
+                element.classList.add('bounce');
+                playAnimalSound(animal);
+                createParticles(x, y, animal.emoji, 6);
+
+                setTimeout(() => {
+                    element.classList.remove('bounce');
+                    state.locked = false;
+                }, 800);
+
+            } else if (state.mode === 'guess') {
+                // 听声找动物模式
+                if (animal.id === state.currentTarget.id) {
+                    // 正确
+                    element.classList.add('correct');
+                    playSound('correct');
+                    playAnimalSound(animal);
+                    createParticles(x, y, '⭐', 12);
+                    
+                    document.getElementById('promptText').textContent = '太棒了！🎉';
+
+                    setTimeout(() => {
+                        element.classList.remove('correct');
+                        startGuessMode();
+                        state.locked = false;
+                    }, 1500);
+
+                } else {
+                    // 错误
+                    element.classList.add('wrong');
+                    playSound('wrong');
+                    createParticles(x, y, '❓', 4);
+
+                    document.getElementById('promptText').textContent = '再试试看！👂';
+
+                    setTimeout(() => {
+                        element.classList.remove('wrong');
+                        state.locked = false;
+                    }, 600);
+                }
+            }
+        }
+
+        function startGuessMode() {
+            state.currentTarget = animals[Math.floor(Math.random() * animals.length)];
+            
+            const promptText = state.language === 'zh' 
+                ? `听！这是谁的声音？`
+                : state.language === 'en'
+                ? `Who makes this sound?`
+                : `边个嘅声音？`;
+            
+            document.getElementById('promptText').textContent = promptText;
+            
+            // 延迟播放动物叫声
+            setTimeout(() => {
+                if (state.mode === 'guess') {
+                    playAnimalSound(state.currentTarget);
+                }
+            }, 1000);
+        }
+
+        // ========== 模式切换 ==========
+        function switchMode(mode) {
+            state.mode = mode;
+            
+            document.getElementById('exploreModeBtn').classList.toggle('active', mode === 'explore');
+            document.getElementById('guessModeBtn').classList.toggle('active', mode === 'guess');
+
+            if (mode === 'explore') {
+                document.getElementById('promptText').textContent = '点击动物听声音！🎵';
+            } else {
+                startGuessMode();
+            }
+        }
+
+        // ========== 设置管理 ==========
+        let settingsHoldTimer = null;
+
+        function setupSettingsButton() {
+            const btn = document.getElementById('settingsBtn');
+            
+            // 触摸事件
+            btn.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                settingsHoldTimer = setTimeout(() => {
+                    btn.classList.add('holding');
+                    setTimeout(() => openSettings(), 100);
+                }, 2000);
+            });
+
+            btn.addEventListener('touchend', (e) => {
+                e.preventDefault();
+                clearTimeout(settingsHoldTimer);
+                btn.classList.remove('holding');
+            });
+
+            // 鼠标事件
+            btn.addEventListener('mousedown', () => {
+                settingsHoldTimer = setTimeout(() => {
+                    btn.classList.add('holding');
+                    setTimeout(() => openSettings(), 100);
+                }, 2000);
+            });
+
+            btn.addEventListener('mouseup', () => {
+                clearTimeout(settingsHoldTimer);
+                btn.classList.remove('holding');
+            });
+        }
+
+        function openSettings() {
+            document.getElementById('settingsPanel').classList.add('show');
+        }
+
+        function closeSettings() {
+            document.getElementById('settingsPanel').classList.remove('show');
+            
+            // 应用设置
+            const newLang = document.getElementById('languageSelect').value;
+            const newVolume = parseInt(document.getElementById('volumeSlider').value) / 100;
+            
+            const langChanged = newLang !== state.language;
+            state.language = newLang;
+            state.volume = newVolume;
+            
+            // 如果语言改变，重新初始化
+            if (langChanged) {
+                initGame();
+            }
+        }
+
+        // ========== 初始化 ==========
+        function initAudio() {
+            if (!state.audioContext) {
+                state.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            }
+        }
+
+        document.getElementById('startBtn').addEventListener('click', () => {
+            initAudio();
+            
+            document.getElementById('loadingScreen').style.display = 'none';
+            document.getElementById('topBar').style.display = 'flex';
+            document.getElementById('gameContainer').style.display = 'flex';
+            
+            state.initialized = true;
+            initGame();
+
+            // 播放欢迎语
+            setTimeout(() => {
+                if (window.speechSynthesis) {
+                    const welcome = new SpeechSynthesisUtterance('欢迎来到动物世界！');
+                    welcome.lang = 'zh-CN';
+                    welcome.volume = state.volume;
+                    speechSynthesis.speak(welcome);
+                }
+            }, 500);
+        });
+
+        // 模式切换按钮
+        document.getElementById('exploreModeBtn').addEventListener('click', () => switchMode('explore'));
+        document.getElementById('guessModeBtn').addEventListener('click', () => switchMode('guess'));
+
+        // 音量滑块更新
+        document.getElementById('volumeSlider').addEventListener('input', (e) => {
+            const value = e.target.value;
+            document.getElementById('volumeDisplay').textContent = `音量: ${value}%`;
+        });
+
+        // 初始化设置
+        document.getElementById('languageSelect').value = state.language;
+        document.getElementById('volumeSlider').value = state.volume * 100;
+        document.getElementById('volumeDisplay').textContent = `音量: ${state.volume * 100}%`;
+
+        // 设置按钮
+        setupSettingsButton();
+
+        // 防止误触滚动
+        document.addEventListener('touchmove', (e) => {
+            if (e.target.closest('.animal-card, .btn, .settings-btn')) {
+                e.preventDefault();
+            }
+        }, { passive: false });
+    </script>
+</body>
+</html>

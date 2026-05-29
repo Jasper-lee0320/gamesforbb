@@ -1,0 +1,1013 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>💖 蓓蓓的爱心方块</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            background: linear-gradient(45deg, #ff6b9d, #c44569, #f8b500, #ff69b4);
+            background-size: 400% 400%;
+            animation: gradientShift 10s ease infinite;
+            color: white;
+            overflow: hidden;
+            user-select: none;
+        }
+        
+        @keyframes gradientShift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+        
+        .game-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .game-board {
+            position: relative;
+            background: rgba(255, 255, 255, 0.1);
+            border: 3px solid #fff;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            overflow: hidden;
+        }
+        
+        .game-grid {
+            display: grid;
+            grid-template-columns: repeat(10, 30px);
+            grid-template-rows: repeat(20, 30px);
+            gap: 1px;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 10px;
+        }
+        
+        .cell {
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+            transition: all 0.2s ease;
+        }
+        
+        .cell.filled {
+            background: var(--cell-color);
+            border: 2px solid #fff;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+        }
+        
+        .cell.active {
+            background: var(--active-color);
+            border: 2px solid #fff;
+            animation: pulse 0.5s ease-in-out infinite alternate;
+        }
+        
+        @keyframes pulse {
+            from { transform: scale(0.9); opacity: 0.8; }
+            to { transform: scale(1); opacity: 1; }
+        }
+        
+        .cell.clearing {
+            animation: clearLine 0.5s ease-in-out;
+        }
+        
+        @keyframes clearLine {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.2); background: #fff; }
+            100% { transform: scale(0); opacity: 0; }
+        }
+        
+        .game-info {
+            position: absolute;
+            left: -250px;
+            top: 0;
+            width: 220px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .next-piece {
+            position: absolute;
+            right: -200px;
+            top: 0;
+            width: 170px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .preview-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 25px);
+            grid-template-rows: repeat(4, 25px);
+            gap: 1px;
+            margin-top: 10px;
+        }
+        
+        .preview-cell {
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 2px;
+        }
+        
+        .preview-cell.filled {
+            background: var(--preview-color);
+            border: 1px solid #fff;
+        }
+        
+        .stats {
+            margin-bottom: 20px;
+        }
+        
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+        
+        .controls {
+            margin-top: 20px;
+            font-size: 12px;
+            line-height: 1.5;
+        }
+        
+        .level-indicator {
+            text-align: center;
+            margin-bottom: 15px;
+            font-size: 18px;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+        
+        .game-over {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255, 255, 255, 0.95);
+            color: #ff1493;
+            padding: 30px;
+            border-radius: 20px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            z-index: 200;
+            display: none;
+        }
+        
+        .restart-btn {
+            background: linear-gradient(45deg, #ff69b4, #ff1493);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 25px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: all 0.3s ease;
+        }
+        
+        .restart-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(255, 20, 147, 0.4);
+        }
+        
+        .achievements {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 255, 255, 0.15);
+            padding: 15px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            text-align: center;
+            min-width: 300px;
+        }
+        
+        .achievement {
+            display: inline-block;
+            margin: 5px;
+            padding: 5px 10px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 15px;
+            font-size: 12px;
+            opacity: 0.6;
+            transition: all 0.3s ease;
+        }
+        
+        .achievement.unlocked {
+            opacity: 1;
+            background: rgba(255, 255, 255, 0.4);
+            animation: achievementUnlock 0.5s ease-out;
+        }
+        
+        @keyframes achievementUnlock {
+            0% { transform: scale(0.8); opacity: 0; }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        
+        .heart-particle {
+            position: absolute;
+            pointer-events: none;
+            z-index: 100;
+            font-size: 20px;
+            animation: heartFloat 2s ease-out forwards;
+        }
+        
+        @keyframes heartFloat {
+            0% {
+                opacity: 1;
+                transform: translateY(0) scale(1) rotate(0deg);
+            }
+            100% {
+                opacity: 0;
+                transform: translateY(-150px) scale(0.5) rotate(360deg);
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .game-container {
+                flex-direction: column;
+                padding: 10px;
+            }
+            
+            .game-info, .next-piece {
+                position: static;
+                width: 100%;
+                margin: 10px 0;
+            }
+            
+            .achievements {
+                position: static;
+                margin-top: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <a href="index.html" style="position:fixed;left:15px;top:15px;background:rgba(255,255,255,0.9);border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;text-decoration:none;font-size:20px;z-index:200;box-shadow:0 2px 8px rgba(0,0,0,0.15);">🏠</a>
+    <div class="game-container">
+        <div class="game-info">
+            <h2>💖 蓓蓓方块</h2>
+            <div class="level-indicator">
+                等级 <span id="level">1</span>
+            </div>
+            <div class="stats">
+                <div class="stat-item">
+                    <span>🌟 分数:</span>
+                    <span id="score">0</span>
+                </div>
+                <div class="stat-item">
+                    <span>📏 行数:</span>
+                    <span id="lines">0</span>
+                </div>
+                <div class="stat-item">
+                    <span>💎 总块数:</span>
+                    <span id="pieces">0</span>
+                </div>
+                <div class="stat-item">
+                    <span>⚡ 连击:</span>
+                    <span id="combo">0</span>
+                </div>
+            </div>
+            <div class="controls">
+                <h3>🎮 控制方法:</h3>
+                <div>← → 移动方块</div>
+                <div>↓ 加速下落</div>
+                <div>↑ / 空格 旋转</div>
+                <div>P 暂停游戏</div>
+            </div>
+        </div>
+        
+        <div class="game-board">
+            <div class="game-grid" id="gameGrid"></div>
+            
+            <div class="game-over" id="gameOver">
+                <h2>🎮 游戏结束</h2>
+                <div id="finalStats"></div>
+                <button class="restart-btn" onclick="restartGame()">🔄 重新开始</button>
+            </div>
+        </div>
+        
+        <div class="next-piece">
+            <h3>💕 下一个:</h3>
+            <div class="preview-grid" id="previewGrid"></div>
+            <div style="margin-top: 20px;">
+                <div class="stat-item">
+                    <span>⏱️ 时间:</span>
+                    <span id="time">00:00</span>
+                </div>
+                <div class="stat-item">
+                    <span>💝 消除:</span>
+                    <span id="cleared">0</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="achievements">
+        <h3>🏆 成就系统</h3>
+        <div class="achievement" id="firstLine">🌟 首次消除</div>
+        <div class="achievement" id="tetris">💎 四行消除</div>
+        <div class="achievement" id="speedster">⚡ 速度达人</div>
+        <div class="achievement" id="combo">🔥 连击高手</div>
+        <div class="achievement" id="survivor">💪 坚持不懈</div>
+        <div class="achievement" id="master">👑 方块大师</div>
+    </div>
+
+    <script>
+        // 游戏状态
+        const gameState = {
+            grid: Array(20).fill().map(() => Array(10).fill(0)),
+            currentPiece: null,
+            nextPiece: null,
+            pieceX: 0,
+            pieceY: 0,
+            score: 0,
+            level: 1,
+            lines: 0,
+            pieces: 0,
+            combo: 0,
+            cleared: 0,
+            gameTime: 0,
+            isPaused: false,
+            isGameOver: false,
+            dropTimer: 0,
+            dropInterval: 1000
+        };
+        
+        // 方块类型定义（爱心主题）
+        const pieceTypes = {
+            // I型 - 爱心棒
+            I: {
+                shape: [
+                    [1, 1, 1, 1]
+                ],
+                color: '#ff69b4',
+                emoji: '💕'
+            },
+            // O型 - 爱心方块
+            O: {
+                shape: [
+                    [1, 1],
+                    [1, 1]
+                ],
+                color: '#ff1493',
+                emoji: '💖'
+            },
+            // T型 - 爱心十字
+            T: {
+                shape: [
+                    [0, 1, 0],
+                    [1, 1, 1]
+                ],
+                color: '#ff6b9d',
+                emoji: '💗'
+            },
+            // S型 - 爱心曲线
+            S: {
+                shape: [
+                    [0, 1, 1],
+                    [1, 1, 0]
+                ],
+                color: '#ffb6c1',
+                emoji: '💓'
+            },
+            // Z型 - 反向爱心曲线
+            Z: {
+                shape: [
+                    [1, 1, 0],
+                    [0, 1, 1]
+                ],
+                color: '#ffc0cb',
+                emoji: '💘'
+            },
+            // J型 - 左爱心钩
+            J: {
+                shape: [
+                    [1, 0, 0],
+                    [1, 1, 1]
+                ],
+                color: '#da70d6',
+                emoji: '💝'
+            },
+            // L型 - 右爱心钩
+            L: {
+                shape: [
+                    [0, 0, 1],
+                    [1, 1, 1]
+                ],
+                color: '#dda0dd',
+                emoji: '💞'
+            }
+        };
+        
+        // 成就系统
+        const achievements = {
+            firstLine: { unlocked: false, name: '首次消除', desc: '消除第一行' },
+            tetris: { unlocked: false, name: '四行消除', desc: '一次消除四行' },
+            speedster: { unlocked: false, name: '速度达人', desc: '达到5级' },
+            combo: { unlocked: false, name: '连击高手', desc: '连击达到5次' },
+            survivor: { unlocked: false, name: '坚持不懈', desc: '游戏超过5分钟' },
+            master: { unlocked: false, name: '方块大师', desc: '分数超过10000' }
+        };
+        
+        // 音效系统
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        
+        function playSound(type) {
+            try {
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                
+                switch(type) {
+                    case 'move':
+                        oscillator.frequency.setValueAtTime(400, audioContext.currentTime);
+                        break;
+                    case 'rotate':
+                        oscillator.frequency.setValueAtTime(600, audioContext.currentTime);
+                        break;
+                    case 'drop':
+                        oscillator.frequency.setValueAtTime(200, audioContext.currentTime);
+                        oscillator.frequency.exponentialRampToValueAtTime(100, audioContext.currentTime + 0.2);
+                        break;
+                    case 'line':
+                        oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
+                        oscillator.frequency.exponentialRampToValueAtTime(1200, audioContext.currentTime + 0.3);
+                        break;
+                    case 'tetris':
+                        oscillator.frequency.setValueAtTime(400, audioContext.currentTime);
+                        oscillator.frequency.exponentialRampToValueAtTime(800, audioContext.currentTime + 0.1);
+                        oscillator.frequency.exponentialRampToValueAtTime(1200, audioContext.currentTime + 0.2);
+                        break;
+                    case 'gameOver':
+                        oscillator.frequency.setValueAtTime(300, audioContext.currentTime);
+                        oscillator.frequency.exponentialRampToValueAtTime(100, audioContext.currentTime + 0.5);
+                        break;
+                }
+                
+                gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+                
+                oscillator.start();
+                oscillator.stop(audioContext.currentTime + 0.5);
+            } catch (e) {
+                console.log('🔊 音效播放失败:', e);
+            }
+        }
+        
+        // 初始化游戏
+        function initGame() {
+            console.log('🎮 初始化蓓蓓的爱心方块');
+            createGrid();
+            spawnPiece();
+            updateDisplay();
+            startGameLoop();
+        }
+        
+        // 创建游戏网格
+        function createGrid() {
+            const grid = document.getElementById('gameGrid');
+            grid.innerHTML = '';
+            
+            for (let y = 0; y < 20; y++) {
+                for (let x = 0; x < 10; x++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'cell';
+                    cell.id = `cell-${x}-${y}`;
+                    grid.appendChild(cell);
+                }
+            }
+            
+            // 创建预览网格
+            const previewGrid = document.getElementById('previewGrid');
+            previewGrid.innerHTML = '';
+            
+            for (let y = 0; y < 4; y++) {
+                for (let x = 0; x < 4; x++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'preview-cell';
+                    cell.id = `preview-${x}-${y}`;
+                    previewGrid.appendChild(cell);
+                }
+            }
+        }
+        
+        // 生成新方块
+        function spawnPiece() {
+            console.log('🎲 生成新方块');
+            
+            if (!gameState.nextPiece) {
+                gameState.nextPiece = getRandomPiece();
+            }
+            
+            gameState.currentPiece = gameState.nextPiece;
+            gameState.nextPiece = getRandomPiece();
+            gameState.pieceX = Math.floor((10 - gameState.currentPiece.shape[0].length) / 2);
+            gameState.pieceY = 0;
+            gameState.pieces++;
+            
+            console.log('📦 当前方块:', gameState.currentPiece.emoji, '下一个:', gameState.nextPiece.emoji);
+            
+            // 检查游戏结束
+            if (checkCollision(gameState.currentPiece, gameState.pieceX, gameState.pieceY)) {
+                endGame();
+                return;
+            }
+            
+            updatePreview();
+        }
+        
+        // 获取随机方块
+        function getRandomPiece() {
+            const types = Object.keys(pieceTypes);
+            const randomType = types[Math.floor(Math.random() * types.length)];
+            const piece = JSON.parse(JSON.stringify(pieceTypes[randomType]));
+            return piece;
+        }
+        
+        // 旋转方块
+        function rotatePiece(piece) {
+            const rotated = {
+                ...piece,
+                shape: piece.shape[0].map((_, i) => 
+                    piece.shape.map(row => row[i]).reverse()
+                )
+            };
+            return rotated;
+        }
+        
+        // 检查碰撞
+        function checkCollision(piece, x, y) {
+            for (let py = 0; py < piece.shape.length; py++) {
+                for (let px = 0; px < piece.shape[py].length; px++) {
+                    if (piece.shape[py][px]) {
+                        const nx = x + px;
+                        const ny = y + py;
+                        
+                        if (nx < 0 || nx >= 10 || ny >= 20 || (ny >= 0 && gameState.grid[ny][nx])) {
+                            return true;
+                        }
+                    }
+                }
+            }
+            return false;
+        }
+        
+        // 放置方块
+        function placePiece() {
+            console.log('📍 放置方块:', gameState.currentPiece.emoji);
+            
+            for (let py = 0; py < gameState.currentPiece.shape.length; py++) {
+                for (let px = 0; px < gameState.currentPiece.shape[py].length; px++) {
+                    if (gameState.currentPiece.shape[py][px]) {
+                        const nx = gameState.pieceX + px;
+                        const ny = gameState.pieceY + py;
+                        
+                        if (ny >= 0) {
+                            gameState.grid[ny][nx] = {
+                                color: gameState.currentPiece.color,
+                                emoji: gameState.currentPiece.emoji
+                            };
+                        }
+                    }
+                }
+            }
+            
+            playSound('drop');
+            createHeartParticles();
+            clearLines();
+            spawnPiece();
+        }
+        
+        // 清除满行
+        function clearLines() {
+            const linesToClear = [];
+            
+            for (let y = 19; y >= 0; y--) {
+                if (gameState.grid[y].every(cell => cell !== 0)) {
+                    linesToClear.push(y);
+                }
+            }
+            
+            if (linesToClear.length > 0) {
+                console.log('🔥 清除行数:', linesToClear.length, '行号:', linesToClear);
+                
+                // 动画效果
+                linesToClear.forEach(y => {
+                    for (let x = 0; x < 10; x++) {
+                        const cell = document.getElementById(`cell-${x}-${y}`);
+                        cell.classList.add('clearing');
+                    }
+                });
+                
+                setTimeout(() => {
+                    // 清除行
+                    for (let i = linesToClear.length - 1; i >= 0; i--) {
+                        gameState.grid.splice(linesToClear[i], 1);
+                        gameState.grid.unshift(Array(10).fill(0));
+                    }
+                    
+                    // 更新统计
+                    gameState.lines += linesToClear.length;
+                    gameState.cleared += linesToClear.length;
+                    gameState.combo++;
+                    
+                    // 计算分数
+                    const baseScore = [0, 100, 300, 500, 800][linesToClear.length];
+                    const levelBonus = gameState.level;
+                    const comboBonus = gameState.combo * 50;
+                    const totalScore = (baseScore + comboBonus) * levelBonus;
+                    
+                    gameState.score += totalScore;
+                    
+                    console.log('💎 得分计算:', {
+                        baseScore,
+                        levelBonus,
+                        comboBonus,
+                        totalScore,
+                        totalScore: gameState.score
+                    });
+                    
+                    // 音效
+                    if (linesToClear.length === 4) {
+                        playSound('tetris');
+                        unlockAchievement('tetris');
+                    } else {
+                        playSound('line');
+                    }
+                    
+                    // 检查成就
+                    if (gameState.lines === 1) {
+                        unlockAchievement('firstLine');
+                    }
+                    
+                    if (gameState.combo >= 5) {
+                        unlockAchievement('combo');
+                    }
+                    
+                    // 升级检查
+                    const newLevel = Math.floor(gameState.lines / 10) + 1;
+                    if (newLevel > gameState.level) {
+                        gameState.level = newLevel;
+                        gameState.dropInterval = Math.max(100, 1000 - (gameState.level - 1) * 100);
+                        console.log('⬆️ 升级到等级:', gameState.level, '速度:', gameState.dropInterval);
+                        
+                        if (gameState.level >= 5) {
+                            unlockAchievement('speedster');
+                        }
+                    }
+                    
+                    if (gameState.score >= 10000) {
+                        unlockAchievement('master');
+                    }
+                    
+                    updateDisplay();
+                }, 300);
+            } else {
+                gameState.combo = 0;
+            }
+        }
+        
+        // 移动方块
+        function movePiece(dx, dy) {
+            const newX = gameState.pieceX + dx;
+            const newY = gameState.pieceY + dy;
+            
+            if (!checkCollision(gameState.currentPiece, newX, newY)) {
+                gameState.pieceX = newX;
+                gameState.pieceY = newY;
+                
+                if (dx !== 0) playSound('move');
+                
+                updateDisplay();
+                return true;
+            }
+            
+            return false;
+        }
+        
+        // 旋转当前方块
+        function rotateCurrentPiece() {
+            const rotated = rotatePiece(gameState.currentPiece);
+            
+            if (!checkCollision(rotated, gameState.pieceX, gameState.pieceY)) {
+                gameState.currentPiece = rotated;
+                playSound('rotate');
+                updateDisplay();
+                console.log('🔄 方块旋转成功');
+            } else {
+                console.log('❌ 方块旋转失败 - 碰撞');
+            }
+        }
+        
+        // 硬降
+        function hardDrop() {
+            while (movePiece(0, 1)) {
+                gameState.score += 2;
+            }
+            placePiece();
+        }
+        
+        // 更新预览
+        function updatePreview() {
+            // 清除预览网格
+            for (let y = 0; y < 4; y++) {
+                for (let x = 0; x < 4; x++) {
+                    const cell = document.getElementById(`preview-${x}-${y}`);
+                    cell.classList.remove('filled');
+                    cell.style.setProperty('--preview-color', 'transparent');
+                }
+            }
+            
+            // 显示下一个方块
+            if (gameState.nextPiece) {
+                for (let py = 0; py < gameState.nextPiece.shape.length; py++) {
+                    for (let px = 0; px < gameState.nextPiece.shape[py].length; px++) {
+                        if (gameState.nextPiece.shape[py][px]) {
+                            const cell = document.getElementById(`preview-${px}-${py}`);
+                            cell.classList.add('filled');
+                            cell.style.setProperty('--preview-color', gameState.nextPiece.color);
+                        }
+                    }
+                }
+            }
+        }
+        
+        // 更新显示
+        function updateDisplay() {
+            // 清除所有活动状态
+            document.querySelectorAll('.cell').forEach(cell => {
+                cell.classList.remove('active', 'filled');
+                cell.style.setProperty('--cell-color', 'transparent');
+                cell.style.setProperty('--active-color', 'transparent');
+            });
+            
+            // 显示固定方块
+            for (let y = 0; y < 20; y++) {
+                for (let x = 0; x < 10; x++) {
+                    if (gameState.grid[y][x]) {
+                        const cell = document.getElementById(`cell-${x}-${y}`);
+                        cell.classList.add('filled');
+                        cell.style.setProperty('--cell-color', gameState.grid[y][x].color);
+                    }
+                }
+            }
+            
+            // 显示当前方块
+            if (gameState.currentPiece) {
+                for (let py = 0; py < gameState.currentPiece.shape.length; py++) {
+                    for (let px = 0; px < gameState.currentPiece.shape[py].length; px++) {
+                        if (gameState.currentPiece.shape[py][px]) {
+                            const nx = gameState.pieceX + px;
+                            const ny = gameState.pieceY + py;
+                            
+                            if (nx >= 0 && nx < 10 && ny >= 0 && ny < 20) {
+                                const cell = document.getElementById(`cell-${nx}-${ny}`);
+                                cell.classList.add('active');
+                                cell.style.setProperty('--active-color', gameState.currentPiece.color);
+                            }
+                        }
+                    }
+                }
+            }
+            
+            // 更新统计信息
+            document.getElementById('score').textContent = gameState.score;
+            document.getElementById('level').textContent = gameState.level;
+            document.getElementById('lines').textContent = gameState.lines;
+            document.getElementById('pieces').textContent = gameState.pieces;
+            document.getElementById('combo').textContent = gameState.combo;
+            document.getElementById('cleared').textContent = gameState.cleared;
+            
+            // 更新时间
+            const minutes = Math.floor(gameState.gameTime / 60);
+            const seconds = gameState.gameTime % 60;
+            document.getElementById('time').textContent = 
+                `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        }
+        
+        // 创建爱心粒子效果
+        function createHeartParticles() {
+            const hearts = ['💖', '💕', '💗', '💓', '💘'];
+            
+            for (let i = 0; i < 8; i++) {
+                const heart = document.createElement('div');
+                heart.className = 'heart-particle';
+                heart.innerHTML = hearts[Math.floor(Math.random() * hearts.length)];
+                
+                const x = (gameState.pieceX + Math.random() * 4) * 30 + 150;
+                const y = (gameState.pieceY + Math.random() * 4) * 30 + 200;
+                
+                heart.style.left = x + 'px';
+                heart.style.top = y + 'px';
+                
+                document.body.appendChild(heart);
+                
+                setTimeout(() => heart.remove(), 2000);
+            }
+        }
+        
+        // 解锁成就
+        function unlockAchievement(id) {
+            if (achievements[id] && !achievements[id].unlocked) {
+                achievements[id].unlocked = true;
+                const element = document.getElementById(id);
+                element.classList.add('unlocked');
+                
+                console.log('🏆 解锁成就:', achievements[id].name);
+                playSound('line');
+                
+                // 创建成就特效
+                createHeartParticles();
+            }
+        }
+        
+        // 游戏主循环
+        function startGameLoop() {
+            console.log('🔄 启动游戏循环');
+            
+            const gameLoop = setInterval(() => {
+                if (gameState.isGameOver) {
+                    clearInterval(gameLoop);
+                    return;
+                }
+                
+                if (!gameState.isPaused) {
+                    gameState.gameTime++;
+                    gameState.dropTimer += 100;
+                    
+                    // 检查时间成就
+                    if (gameState.gameTime >= 300) { // 5分钟
+                        unlockAchievement('survivor');
+                    }
+                    
+                    // 自动下落
+                    if (gameState.dropTimer >= gameState.dropInterval) {
+                        if (!movePiece(0, 1)) {
+                            placePiece();
+                        }
+                        gameState.dropTimer = 0;
+                    }
+                    
+                    updateDisplay();
+                }
+            }, 100);
+        }
+        
+        // 键盘控制
+        document.addEventListener('keydown', (e) => {
+            if (gameState.isGameOver || gameState.isPaused) return;
+            
+            switch(e.key) {
+                case 'ArrowLeft':
+                    e.preventDefault();
+                    movePiece(-1, 0);
+                    break;
+                case 'ArrowRight':
+                    e.preventDefault();
+                    movePiece(1, 0);
+                    break;
+                case 'ArrowDown':
+                    e.preventDefault();
+                    if (movePiece(0, 1)) {
+                        gameState.score += 1;
+                    }
+                    break;
+                case 'ArrowUp':
+                case ' ':
+                    e.preventDefault();
+                    rotateCurrentPiece();
+                    break;
+                case 'p':
+                case 'P':
+                    gameState.isPaused = !gameState.isPaused;
+                    console.log('⏸️ 游戏', gameState.isPaused ? '暂停' : '继续');
+                    break;
+            }
+        });
+        
+        // 触摸控制
+        let touchStartX = 0;
+        let touchStartY = 0;
+        
+        document.addEventListener('touchstart', (e) => {
+            touchStartX = e.touches[0].clientX;
+            touchStartY = e.touches[0].clientY;
+        });
+        
+        document.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+        });
+        
+        document.addEventListener('touchend', (e) => {
+            if (gameState.isGameOver || gameState.isPaused) return;
+            
+            const touchEndX = e.changedTouches[0].clientX;
+            const touchEndY = e.changedTouches[0].clientY;
+            const diffX = touchEndX - touchStartX;
+            const diffY = touchEndY - touchStartY;
+            
+            if (Math.abs(diffX) > Math.abs(diffY)) {
+                // 水平滑动
+                if (Math.abs(diffX) > 30) {
+                    if (diffX > 0) {
+                        movePiece(1, 0);
+                    } else {
+                        movePiece(-1, 0);
+                    }
+                } else {
+                    // 点击旋转
+                    rotateCurrentPiece();
+                }
+            } else {
+                // 垂直滑动
+                if (diffY > 30) {
+                    hardDrop();
+                } else if (diffY < -30) {
+                    rotateCurrentPiece();
+                } else {
+                    // 点击旋转
+                    rotateCurrentPiece();
+                }
+            }
+        });
+        
+        // 结束游戏
+        function endGame() {
+            console.log('🎮 游戏结束!', {
+                finalScore: gameState.score,
+                level: gameState.level,
+                lines: gameState.lines,
+                pieces: gameState.pieces
+            });
+            
+            gameState.isGameOver = true;
+            playSound('gameOver');
+            
+            const finalStats = document.getElementById('finalStats');
+            finalStats.innerHTML = `
+                <p>🌟 最终分数: ${gameState.score}</p>
+                <p>📏 消除行数: ${gameState.lines}</p>
+                <p>⬆️ 达到等级: ${gameState.level}</p>
+                <p>💎 放置方块: ${gameState.pieces}个</p>
+                <p>⏱️ 游戏时间: ${Math.floor(gameState.gameTime/60)}:${(gameState.gameTime%60).toString().padStart(2,'0')}</p>
+            `;
+            
+            document.getElementById('gameOver').style.display = 'block';
+        }
+        
+        // 重新开始游戏
+        function restartGame() {
+            console.log('🔄 重新开始游戏');
+            
+            // 重置游戏状态
+            gameState.grid = Array(20).fill().map(() => Array(10).fill(0));
+            gameState.currentPiece = null;
+            gameState.nextPiece = null;
+            gameState.pieceX = 0;
+            gameState.pieceY = 0;
+            gameState.score = 0;
+            gameState.level = 1;
+            gameState.lines = 0;
+            gameState.pieces = 0;
+            gameState.combo = 0;
+            gameState.cleared = 0;
+            gameState.gameTime = 0;
+            gameState.isPaused = false;
+            gameState.isGameOver = false;
+            gameState.dropTimer = 0;
+            gameState.dropInterval = 1000;
+            
+            // 清理UI
+            document.getElementById('gameOver').style.display = 'none';
+            document.querySelectorAll('.heart-particle').forEach(el => el.remove());
+            
+            initGame();
+        }
+        
+        // 启动游戏
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('🎮 蓓蓓的爱心方块加载完成!');
+            initGame();
+        });
+    </script>
+</body>
+</html>
