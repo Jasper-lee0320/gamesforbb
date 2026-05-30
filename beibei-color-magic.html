@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>颜色魔法师</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{font-family:"PingFang SC","Microsoft YaHei",sans-serif;overflow:hidden;touch-action:none;height:100vh;height:100dvh;transition:background .6s ease}
+.home-btn{position:fixed;left:12px;top:12px;background:rgba(255,255,255,.85);border-radius:50%;width:40px;height:40px;display:flex;align-items:center;justify-content:center;text-decoration:none;font-size:22px;z-index:100;box-shadow:0 2px 10px rgba(0,0,0,.12)}
+.title-bar{position:fixed;top:0;left:0;right:0;padding:14px 60px 10px;text-align:center;z-index:50;background:rgba(0,0,0,.05)}
+.title-text{font-size:24px;font-weight:800;color:#fff;text-shadow:0 2px 6px rgba(0,0,0,.2)}
+.color-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;padding:80px 16px 20px;max-width:480px;margin:0 auto;height:100vh;height:100dvh;align-content:center}
+.color-card{border-radius:22px;aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;transition:transform .15s;box-shadow:0 6px 20px rgba(0,0,0,.15);border:4px solid rgba(255,255,255,.5);position:relative;overflow:hidden}
+.color-card:active{transform:scale(.92)}
+.color-emoji{font-size:38px;margin-bottom:4px;filter:drop-shadow(0 2px 4px rgba(0,0,0,.2))}
+.color-name{font-size:16px;font-weight:800;color:#fff;text-shadow:0 2px 4px rgba(0,0,0,.3)}
+.color-en{font-size:11px;color:rgba(255,255,255,.8);margin-top:2px}
+.celebrate{position:fixed;pointer-events:none;z-index:200;font-size:40px;animation:popUp .8s ease-out forwards}
+@keyframes popUp{0%{opacity:1;transform:translateY(0) scale(1)}100%{opacity:0;transform:translateY(-120px) scale(1.5)}}
+.feedback-text{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);font-size:60px;pointer-events:none;z-index:150;animation:fadeScale 1s ease-out forwards;text-shadow:0 4px 20px rgba(0,0,0,.2)}
+@keyframes fadeScale{0%{opacity:0;transform:translate(-50%,-50%) scale(.5)}30%{opacity:1;transform:translate(-50%,-50%) scale(1.2)}100%{opacity:0;transform:translate(-50%,-50%) scale(1)}}
+</style>
+</head>
+<body id="body">
+<a href="index.html" class="home-btn">🏠</a>
+<div class="title-bar"><div class="title-text" id="titleText">🌈 点一点，变颜色！</div></div>
+<div class="color-grid" id="colorGrid"></div>
+
+<script>
+const colors = [
+  {name:'红色',en:'Red',bg:'#ff3b30',emoji:'🍎'},
+  {name:'蓝色',en:'Blue',bg:'#007aff',emoji:'🌊'},
+  {name:'绿色',en:'Green',bg:'#34c759',emoji:'🌿'},
+  {name:'黄色',en:'Yellow',bg:'#ffcc00',emoji:'☀️'},
+  {name:'橙色',en:'Orange',bg:'#ff9500',emoji:'🍊'},
+  {name:'紫色',en:'Purple',bg:'#af52de',emoji:'🍇'},
+  {name:'粉色',en:'Pink',bg:'#ff6b9d',emoji:'🌸'},
+  {name:'白色',en:'White',bg:'#e5e5ea',emoji:'☁️'},
+  {name:'黑色',en:'Black',bg:'#1c1c1e',emoji:'🌙'},
+];
+let locked = false;
+
+colors.forEach((c,i) => {
+  const card = document.createElement('div');
+  card.className = 'color-card';
+  card.style.background = c.bg;
+  card.innerHTML = `<div class="color-emoji">${c.emoji}</div><div class="color-name">${c.name}</div><div class="color-en">${c.en}</div>`;
+  card.onclick = () => tapColor(c,i,card);
+  document.getElementById('colorGrid').appendChild(card);
+});
+
+function tapColor(c, i, card) {
+  if(locked) return;
+  locked = true;
+  // Screen flash
+  document.getElementById('body').style.background = c.bg;
+  document.getElementById('titleText').textContent = c.emoji + ' ' + c.name + '！';
+  // Particle
+  const rect = card.getBoundingClientRect();
+  const p = document.createElement('div');
+  p.className = 'celebrate';
+  p.textContent = c.emoji;
+  p.style.left = (rect.left + rect.width/2 - 20) + 'px';
+  p.style.top = (rect.top + rect.height/2 - 20) + 'px';
+  document.body.appendChild(p);
+  setTimeout(() => p.remove(), 800);
+  // Feedback text
+  const fb = document.createElement('div');
+  fb.className = 'feedback-text';
+  fb.textContent = c.emoji;
+  document.body.appendChild(fb);
+  setTimeout(() => fb.remove(), 1000);
+  // Speak
+  speak(c.name + '。' + c.en);
+  // Burst particles
+  for(let j=0;j<12;j++){
+    const b = document.createElement('div');
+    b.className = 'celebrate';
+    b.textContent = ['✨','⭐','💫','🌟'][j%4];
+    b.style.left = (rect.left + rect.width/2 + (Math.random()-0.5)*120) + 'px';
+    b.style.top = (rect.top + rect.height/2 + (Math.random()-0.5)*120) + 'px';
+    b.style.animationDuration = (0.6+Math.random()*0.6) + 's';
+    document.body.appendChild(b);
+    setTimeout(() => b.remove(), 1200);
+  }
+  setTimeout(() => { locked = false; }, 500);
+}
+
+function speak(text){
+  if(!window.speechSynthesis) return;
+  speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = 'zh-CN'; u.rate = 0.7; u.volume = 0.9;
+  speechSynthesis.speak(u);
+}
+</script>
+</body>
+</html>

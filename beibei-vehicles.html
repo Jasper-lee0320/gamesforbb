@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>交通工具</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{font-family:"PingFang SC","Microsoft YaHei",sans-serif;background:linear-gradient(180deg,#e8f4fd,#cce5ff);overflow:hidden;touch-action:none;height:100vh;height:100dvh;display:flex;flex-direction:column}
+.home-btn{position:fixed;left:12px;top:12px;background:rgba(255,255,255,.9);border-radius:50%;width:40px;height:40px;display:flex;align-items:center;justify-content:center;text-decoration:none;font-size:22px;z-index:100;box-shadow:0 2px 10px rgba(0,0,0,.1)}
+.top-bar{text-align:center;padding:60px 20px 10px}
+.top-bar h1{font-size:26px;color:#007aff;margin-bottom:4px}
+.vehicle-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;padding:10px 16px;max-width:480px;margin:0 auto;flex:1;align-content:center}
+.vehicle-card{background:#fff;border-radius:22px;padding:20px;display:flex;flex-direction:column;align-items:center;cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,.08);transition:transform .15s;min-height:150px;justify-content:center}
+.vehicle-card:active{transform:scale(.93)}
+.vehicle-card.playing{border:3px solid #007aff;box-shadow:0 0 20px rgba(0,122,255,.3)}
+.vehicle-emoji{font-size:60px;margin-bottom:8px}
+.vehicle-name{font-size:18px;font-weight:800;color:#333}
+.vehicle-en{font-size:12px;color:#999;margin-top:2px}
+.vehicle-sound{font-size:11px;color:#007aff;margin-top:6px;background:#e8f4fd;padding:4px 12px;border-radius:10px}
+</style>
+</head>
+<body>
+<a href="index.html" class="home-btn">🏠</a>
+<div class="top-bar"><h1>🚗 交通工具</h1></div>
+<div class="vehicle-grid" id="grid"></div>
+
+<script>
+const vehicles = [
+  {emoji:'🚗',zh:'小汽车',en:'Car',sound:'beep'},
+  {emoji:'🚌',zh:'公交车',en:'Bus',sound:'honk'},
+  {emoji:'🚂',zh:'火车',en:'Train',sound:'choo'},
+  {emoji:'✈️',zh:'飞机',en:'Airplane',sound:'whoosh'},
+  {emoji:'🚒',zh:'消防车',en:'Fire Truck',sound:'siren'},
+  {emoji:'🚓',zh:'警车',en:'Police Car',sound:'weeoo'},
+  {emoji:'🚢',zh:'轮船',en:'Ship',sound:'foghorn'},
+  {emoji:'🚲',zh:'自行车',en:'Bicycle',sound:'ring'},
+];
+
+let audioCtx = null;
+function initAudio(){ if(!audioCtx) audioCtx = new(window.AudioContext||window.webkitAudioContext)(); }
+
+function playSound(type){
+  initAudio();
+  const ctx = audioCtx;
+  const now = ctx.currentTime;
+  const o = ctx.createOscillator();
+  const g = ctx.createGain();
+  o.connect(g); g.connect(ctx.destination);
+  g.gain.setValueAtTime(0.08, now);
+  g.gain.exponentialRampToValueAtTime(0.001, now+0.6);
+
+  switch(type){
+    case 'beep': o.frequency.setValueAtTime(600,now); o.frequency.setValueAtTime(800,now+.15); break;
+    case 'honk': o.frequency.setValueAtTime(300,now); o.frequency.setValueAtTime(250,now+.25); break;
+    case 'choo': o.type='sawtooth'; o.frequency.setValueAtTime(200,now); o.frequency.linearRampToValueAtTime(400,now+.3); o.frequency.linearRampToValueAtTime(200,now+.6); break;
+    case 'whoosh': o.type='sawtooth'; o.frequency.setValueAtTime(500,now); o.frequency.exponentialRampToValueAtTime(100,now+.5); break;
+    case 'siren': o.type='square'; o.frequency.setValueAtTime(400,now); o.frequency.setValueAtTime(600,now+.2); o.frequency.setValueAtTime(400,now+.4); o.frequency.setValueAtTime(600,now+.6); break;
+    case 'weeoo': o.type='square'; o.frequency.setValueAtTime(500,now); o.frequency.setValueAtTime(700,now+.15); o.frequency.setValueAtTime(500,now+.3); o.frequency.setValueAtTime(700,now+.45); break;
+    case 'foghorn': o.frequency.setValueAtTime(150,now); o.frequency.setValueAtTime(120,now+.4); break;
+    case 'ring': o.frequency.setValueAtTime(1000,now); o.frequency.setValueAtTime(1200,now+.1); break;
+  }
+  o.start(now); o.stop(now+.65);
+}
+
+function tapVehicle(v, card){
+  card.classList.add('playing');
+  setTimeout(() => card.classList.remove('playing'), 400);
+  playSound(v.sound);
+  speak(v.zh);
+}
+
+function speak(text){
+  if(!window.speechSynthesis) return;
+  speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = 'zh-CN'; u.rate = 0.65; u.volume = 1;
+  speechSynthesis.speak(u);
+}
+
+const grid = document.getElementById('grid');
+vehicles.forEach(v => {
+  const card = document.createElement('div');
+  card.className = 'vehicle-card';
+  card.innerHTML = `<div class="vehicle-emoji">${v.emoji}</div><div class="vehicle-name">${v.zh}</div><div class="vehicle-en">${v.en}</div><div class="vehicle-sound">🔊 点我听声音</div>`;
+  card.onclick = () => tapVehicle(v, card);
+  grid.appendChild(card);
+});
+</script>
+</body>
+</html>

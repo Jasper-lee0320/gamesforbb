@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>认识水果</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{font-family:"PingFang SC","Microsoft YaHei",sans-serif;background:linear-gradient(180deg,#fff5e6,#ffe8cc);overflow:hidden;touch-action:none;height:100vh;height:100dvh;display:flex;flex-direction:column}
+.home-btn{position:fixed;left:12px;top:12px;background:rgba(255,255,255,.9);border-radius:50%;width:40px;height:40px;display:flex;align-items:center;justify-content:center;text-decoration:none;font-size:22px;z-index:100;box-shadow:0 2px 10px rgba(0,0,0,.1)}
+.top-bar{text-align:center;padding:60px 20px 10px}
+.top-bar h1{font-size:26px;color:#ff9500;margin-bottom:4px}
+.top-bar p{font-size:13px;color:#999}
+.card-area{flex:1;display:flex;align-items:center;justify-content:center;position:relative}
+.fruit-card{background:#fff;border-radius:30px;width:280px;height:380px;display:flex;flex-direction:column;align-items:center;justify-content:center;box-shadow:0 10px 40px rgba(0,0,0,.1);transition:transform .25s,opacity .25s;cursor:pointer;position:relative}
+.fruit-card:active{transform:scale(.96)}
+.fruit-emoji{font-size:140px;transition:transform .3s}
+.fruit-emoji.bounce{animation:bounce .4s ease}
+@keyframes bounce{0%,100%{transform:scale(1)}50%{transform:scale(1.15)}}
+.fruit-name{font-size:32px;font-weight:800;color:#333;margin-top:10px}
+.fruit-en{font-size:18px;color:#999;margin-top:4px}
+.nav-row{display:flex;justify-content:center;gap:20px;padding:20px}
+.nav-btn{width:60px;height:60px;border-radius:50%;border:none;background:#fff;font-size:28px;cursor:pointer;box-shadow:0 4px 15px rgba(0,0,0,.1);transition:transform .15s;display:flex;align-items:center;justify-content:center}
+.nav-btn:active{transform:scale(.9)}
+.nav-btn.speak{background:#ff9500;color:#fff;font-size:24px}
+.dots{display:flex;gap:8px;justify-content:center;padding:10px}
+.dot{width:10px;height:10px;border-radius:50%;background:#ddd;transition:all .3s}
+.dot.active{background:#ff9500;width:14px;height:14px}
+</style>
+</head>
+<body>
+<a href="index.html" class="home-btn">🏠</a>
+<div class="top-bar"><h1>🍎 认识水果</h1><p>点一点卡片，听声音学水果</p></div>
+<div class="dots" id="dots"></div>
+<div class="card-area">
+  <div class="fruit-card" id="card" onclick="tapCard()">
+    <div class="fruit-emoji" id="emoji">🍎</div>
+    <div class="fruit-name" id="fname">苹果</div>
+    <div class="fruit-en" id="fen">Apple</div>
+  </div>
+</div>
+<div class="nav-row">
+  <button class="nav-btn" onclick="prevFruit()">◀</button>
+  <button class="nav-btn speak" onclick="speakCurrent()">🔊</button>
+  <button class="nav-btn" onclick="nextFruit()">▶</button>
+</div>
+
+<script>
+const fruits = [
+  {emoji:'🍎',zh:'苹果',en:'Apple'},
+  {emoji:'🍌',zh:'香蕉',en:'Banana'},
+  {emoji:'🍊',zh:'橙子',en:'Orange'},
+  {emoji:'🍇',zh:'葡萄',en:'Grape'},
+  {emoji:'🍉',zh:'西瓜',en:'Watermelon'},
+  {emoji:'🍓',zh:'草莓',en:'Strawberry'},
+  {emoji:'🍑',zh:'桃子',en:'Peach'},
+  {emoji:'🍒',zh:'樱桃',en:'Cherry'},
+  {emoji:'🥝',zh:'猕猴桃',en:'Kiwi'},
+  {emoji:'🍋',zh:'柠檬',en:'Lemon'},
+  {emoji:'🥭',zh:'芒果',en:'Mango'},
+  {emoji:'🍐',zh:'梨',en:'Pear'},
+];
+let idx = 0;
+
+function init(){
+  const dotsEl = document.getElementById('dots');
+  dotsEl.innerHTML = '';
+  fruits.forEach((_,i) => {
+    const d = document.createElement('div');
+    d.className = 'dot' + (i===0?' active':'');
+    dotsEl.appendChild(d);
+  });
+}
+
+function showFruit(){
+  const f = fruits[idx];
+  document.getElementById('emoji').textContent = f.emoji;
+  document.getElementById('emoji').classList.remove('bounce');
+  void document.getElementById('emoji').offsetWidth;
+  document.getElementById('emoji').classList.add('bounce');
+  document.getElementById('fname').textContent = f.zh;
+  document.getElementById('fen').textContent = f.en;
+  document.querySelectorAll('.dot').forEach((d,i) => d.classList.toggle('active', i===idx));
+  speak(f.zh + '，' + f.en);
+}
+
+function nextFruit(){ idx = (idx+1) % fruits.length; showFruit(); }
+function prevFruit(){ idx = (idx-1+fruits.length) % fruits.length; showFruit(); }
+function tapCard(){ speak(fruits[idx].zh + '，' + fruits[idx].en); }
+function speakCurrent(){ speak(fruits[idx].zh + '，' + fruits[idx].en); }
+
+function speak(text){
+  if(!window.speechSynthesis) return;
+  speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = 'zh-CN'; u.rate = 0.65; u.volume = 1;
+  speechSynthesis.speak(u);
+}
+
+// Swipe support
+let touchX = 0;
+document.getElementById('card').addEventListener('touchstart', e => { touchX = e.touches[0].clientX });
+document.getElementById('card').addEventListener('touchend', e => {
+  const dx = e.changedTouches[0].clientX - touchX;
+  if(Math.abs(dx) > 50) dx > 0 ? prevFruit() : nextFruit();
+});
+
+init(); showFruit();
+</script>
+</body>
+</html>
